@@ -4,8 +4,9 @@ import os
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.conf import settings
-from django.db.models import Max
-from django.contrib.auth.decorators import login_required # Import for function-based view
+from django.db.models import Max, Subquery, OuterRef # <-- UPDATED IMPORT for Subquery/OuterRef
+from django.contrib.auth.decorators import login_required 
+from django.contrib.auth.forms import UserCreationForm 
 # NOTE: We switch ChatAPIView to synchronous since DRF APIView dispatcher is sync by default
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -81,7 +82,8 @@ def initialize_adk_session_sync(session_id: str, adk_user_id: str):
         asyncio.run(_init_session())
 
 
-# --- Web Page View ---
+# --- Web Page Views ---
+
 @login_required
 def index(request):
     """Serves the main chat page, handling session ID redirection, protected by login."""
@@ -97,10 +99,46 @@ def index(request):
     })
 
 
+def register_view(request):
+    """Handles user registration using Django's built-in UserCreationForm."""
+    
+    if request.user.is_authenticated:
+        # If the user is already logged in, redirect them to the main app page
+        return redirect(reverse('index'))
+        
+    if request.method == 'POST':
+        # Create a form instance and populate it with data from the request (binding)
+        # Note: UserCreationForm requires two password fields (password and password2)
+        form = UserCreationForm(request.POST)
+        
+        if form.is_valid():
+            # Save the new user object
+            form.save()
+            
+            # Display success message and render the form again
+            context = {
+                'form': UserCreationForm(), # Use a new, empty form after success
+                'success_message': 'Account created successfully! You can now proceed to login.'
+            }
+            # FIX: Use the correct template path 'myapp/register.html'
+            return render(request, 'registration/register.html', context)
+        
+        # If the form is NOT valid, it automatically contains error messages
+        # Fall through to the final render
+    else:
+        # Create an empty form instance for a GET request
+        form = UserCreationForm()
+        
+    # FIX: Use the correct template path 'myapp/register.html'
+    return render(request, 'registration/register.html', {'form': form})
+
+
 # --- API Views (DRF) ---
 
 class ChatHistoryView(APIView):
-    """Retrieves chat history for the current session and all sessions, filtered by user."""
+    """Retrieves chat history for the current session and all sessions, filtered by user.
+       Now includes the last user message as the session name.
+    """
     
     def get(self, request):
         if not request.user.is_authenticated:
@@ -119,19 +157,54 @@ class ChatHistoryView(APIView):
         )
         history_data = ChatMessageSerializer(history_qs, many=True).data
         
-        # 2. Load all unique session IDs, FILTERED by user_id
+        # 2. Load all unique session IDs and their last user message, FILTERED by user_id
+        
+        # Subquery to find the text of the most recent 'user' message for each session_id
+        last_user_message_text = ChatMessage.objects.filter(
+            user_id=request.user.pk,
+            session_id=OuterRef('session_id'),
+            role='user'
+        ).order_by('-timestamp').values('text')[:1] # Get the text of the latest user message
+        
+        
+        # Query distinct session IDs, annotated with max timestamp (for sorting) 
+        # and the text of the last user message
         sessions_qs = ChatMessage.objects.filter(
             user_id=request.user.pk # Filter by Django user PK
         ).values('session_id').annotate(
-            max_timestamp=Max('timestamp')
+            # Annotate with the max timestamp for sorting
+            max_timestamp=Max('timestamp'),
+            # Annotate with the text of the last user message
+            last_user_message_text=Subquery(last_user_message_text)
         ).order_by('-max_timestamp')
         
-        sessions = [item['session_id'] for item in sessions_qs]
+        # Process the queryset into a list of objects for the frontend
+        sessions_list_data = []
+        MAX_NAME_LENGTH = 30
+        
+        for item in sessions_qs:
+            session_id = item['session_id']
+            # Get the last user message text
+            session_name = item['last_user_message_text']
+            
+            # Fallback to a default name if no user message was sent yet
+            if not session_name:
+                display_name = f"Chat #{session_id}"
+            else:
+                # Trim the message to a reasonable length for the sidebar
+                display_name = session_name
+                if len(display_name) > MAX_NAME_LENGTH:
+                    display_name = display_name[:MAX_NAME_LENGTH - 3] + '...'
+                
+            sessions_list_data.append({
+                'id': session_id,
+                'name': display_name,
+            })
 
         return Response({
             "history": history_data,
             "current_session_id": current_session_id,
-            "sessions": sessions
+            "sessions": sessions_list_data # Send the list of objects with ID and Name
         })
 
 

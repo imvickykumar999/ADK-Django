@@ -7,7 +7,6 @@
     <link href="https://avatars.githubusercontent.com/u/67197854" rel="icon">
 
     <title>ADK Agent Web Chat - Session {{ current_session_id }}</title>
-    <!-- Load Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom Scrollbar for Chat Window */
@@ -33,6 +32,10 @@
             background-color: #d1d5db; /* gray-300 */
             border-radius: 3px;
         }
+        /* ADD THIS NEW RULE to ensure the logo is circular */
+        .adk-logo-circle {
+            border-radius: 50% !important; 
+        }
     </style>
     <script>
         // Set up Tailwind configuration for the Inter font
@@ -47,74 +50,67 @@
         }
     </script>
 </head>
-<!-- Full screen wrapper -->
 <body class="bg-gray-100 min-h-screen flex w-full"> 
     
-    <!-- Sidebar for Session History -->
-    <!-- FIX: Added flex flex-col and removed overflow-y-auto -->
     <div id="sidebar" class="fixed top-0 left-0 h-screen w-64 bg-white shadow-2xl ring-1 ring-gray-200 p-4 flex-shrink-0 z-50 
             transform -translate-x-full transition-transform duration-300 flex flex-col
             lg:static lg:transform-none lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:ml-4 lg:mr-4 lg:rounded-xl">
         
-        <!-- FIXED HEADER BLOCK -->
         <div class="flex-shrink-0 pb-4 border-b">
             <h2 class="text-xl font-bold text-gray-800 mb-4 text-center">Sessions</h2>
             <a href="{% url 'index' %}" id="new-chat-link" class="block w-full text-center py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-200">
                 + New Chat
             </a>
             
-            <!-- LOGOUT FORM FIX: Use POST method for secure logout -->
-            <form action="{% url 'logout' %}" method="post" class="mt-2">
+            </div>
+        
+        <div class="session-list-scroll flex-grow overflow-y-auto pt-4">
+            <div id="session-list" class="space-y-1">
+                </div>
+        </div>
+        
+        <div class="flex-shrink-0 pt-4 border-t mt-4">
+            <form action="{% url 'logout' %}" method="post" class="w-full">
                 {% csrf_token %}
-                <button type="submit" class="block w-full text-center py-1 text-sm text-gray-600 hover:text-gray-900 transition duration-200">
+                <button 
+                    type="submit" 
+                    class="block w-full text-center py-2 
+                           bg-red-500 text-white font-semibold rounded-lg 
+                           hover:bg-red-600 transition duration-200"
+                >
                     Logout ({{ user.username }})
                 </button>
             </form>
         </div>
-        
-        <!-- SCROLLABLE SESSION LIST -->
-        <!-- FIX: Added overflow-y-auto, flex-grow, and custom class for scrollbar styling -->
-        <div class="session-list-scroll flex-grow overflow-y-auto pt-4">
-            <div id="session-list" class="space-y-1">
-                <!-- Session links will be populated here by JavaScript -->
-            </div>
-        </div>
     </div>
     
-    <!-- Main Chat Area -->
     <div class="w-full bg-white shadow-2xl ring-1 ring-gray-200 rounded-none overflow-hidden flex flex-col h-screen flex-grow 
          lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:mr-4 lg:rounded-xl">
         
-        <!-- Header (Fixed to the top of the chat area) -->
         <header class="p-4 bg-indigo-600 text-white shadow-lg flex-shrink-0 rounded-t-none lg:rounded-t-xl flex items-center">
-            <!-- Hamburger Button, visible only below large screen size -->
             <button id="menu-button" class="lg:hidden p-2 mr-3 rounded-md hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
             <div class="flex-grow">
-                <h1 class="text-2xl font-extrabold tracking-tight">ADK Agent Chat (Django)</h1>
+                <h1 class="text-2xl font-extrabold tracking-tight">ADK Agent Chat</h1>
                 <p class="text-sm opacity-80 mt-1">Current Session: <b id="current-session-display">{{ current_session_id }}</b></p>
             </div>
             
             <a href="https://github.com/imvickykumar999/ADK-Django" target="_blank" class="block">
                 <div id="logo-icon" class="p-0 ml-3 opacity-90 transition duration-200 hover:opacity-100 cursor-pointer">
-                    <!-- Placeholder image -->
                     <img 
                         src="https://avatars.githubusercontent.com/u/67197854" 
                         alt="ADK Agent Logo" 
-                        class="h-12 w-12 rounded-full border-2 border-white shadow-lg object-cover"
+                        class="h-12 w-12 border-2 border-white shadow-lg object-cover adk-logo-circle" 
                     />
                 </div>
             </a>
             
         </header>
 
-        <!-- Chat Window (Scrollable content area) -->
         <div id="chat-window" class="chat-window flex-grow overflow-y-auto p-4 space-y-4">
-            <!-- Chat messages go here -->
-        </div>
+            </div>
 
-        <!-- Input Form (Fixed to the bottom of the chat area) -->
         <div class="p-4 border-t border-gray-200 bg-white flex-shrink-0">
             <form id="chat-form" class="flex space-x-3">
                 <input 
@@ -217,15 +213,13 @@
                     messageElement.className = 'flex justify-end';
                     messageElement.innerHTML = `
                         <div class="bg-indigo-600 text-white p-4 rounded-xl rounded-br-sm max-w-[80%] shadow-lg break-words whitespace-pre-wrap">
-                            <!-- Placeholder will be filled with text content -->
-                        </div>
+                            </div>
                     `;
                 } else { // agent
                     messageElement.className = 'flex justify-start';
                     messageElement.innerHTML = `
                         <div class="bg-gray-200 text-gray-800 p-4 rounded-xl rounded-tl-sm max-w-[80%] shadow-lg break-words whitespace-pre-wrap">
-                            <!-- Placeholder will be filled with text content -->
-                        </div>
+                            </div>
                     `;
                 }
                 
@@ -244,7 +238,11 @@
             // Function to populate the sidebar with session links
             function populateSessionList(sessions) {
                 sessionList.innerHTML = ''; // Clear existing list
-                sessions.forEach(sessionId => {
+                // Sessions is now an array of objects: [{id: '...', name: '...'}, ...]
+                sessions.forEach(session => {
+                    const sessionId = session.id;
+                    const sessionName = session.name; // Use the custom name provided by the API
+                    
                     const link = document.createElement('a');
                     // Use Django's URL tag to generate the base index URL
                     link.href = "{% url 'index' %}?session_id=" + sessionId;
@@ -252,7 +250,8 @@
                     link.className = `block p-2 text-sm rounded-lg hover:bg-gray-200 transition duration-150 truncate 
                         ${sessionId === currentSessionId ? 'bg-indigo-100 font-semibold text-indigo-700' : 'text-gray-700'}`;
                     
-                    link.textContent = `Chat #${sessionId}`;
+                    // Use the session name from the API
+                    link.textContent = sessionName;
                     link.addEventListener('click', () => toggleSidebar(false)); // Close sidebar on session change
                     sessionList.appendChild(link);
                 });
@@ -281,7 +280,7 @@
                         });
                     }
                     
-                    // 3. Populate Session List
+                    // 3. Populate Session List (data.sessions now contains objects with id and name)
                     populateSessionList(data.sessions || []);
 
                     // 4. Scroll to bottom smoothly after loading history

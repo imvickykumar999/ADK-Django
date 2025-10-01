@@ -3,11 +3,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+# Import the register view from myapp's views
+from myapp.views import register_view 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('myapp.urls')),
 
     path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/register/', register_view, name='register'), # <-- NEW LINE
 ]
 
 # Serving static and media files during development (DEBUG=True)

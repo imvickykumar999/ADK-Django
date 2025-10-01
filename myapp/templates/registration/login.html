@@ -100,17 +100,15 @@
             <input type="hidden" name="next" value="{{ next }}">
         </form>
 
-        <!-- <div class="mt-6 text-center">
+        <!-- Registration Link: Now points to the custom register view -->
+        <div class="mt-6 text-center">
             <p class="text-sm text-gray-600">
                 Don't have an account? 
-                <a href="{% url 'admin:index' %}" class="font-medium text-indigo-600 hover:text-indigo-500">
-                    Register (use Admin for now)
+                <a href="{% url 'register' %}" class="font-medium text-indigo-600 hover:text-indigo-500">
+                    Register
                 </a>
             </p>
-            <p class="mt-2 text-xs text-gray-400">
-                To create a new user, please use the Django Admin interface for this demo.
-            </p>
-        </div> -->
+        </div>
     </div>
 </body>
 </html>
