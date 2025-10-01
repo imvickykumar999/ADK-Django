@@ -30,8 +30,16 @@ SECRET_KEY = "django-insecure-8ff9p*t((q)9vuaedhoa8duhkikulw$yj9i@rem^+^=nhl8oif
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    ".ngrok-free.dev",
+]
 
+# You must include the protocol (https://)
+CSRF_TRUSTED_ORIGINS = [
+    # 'https://uncoaxing-ropable-latesha.ngrok-free.dev',
+    'https://*.ngrok-free.dev',  # Optional: Trust all subdomains if your ngrok URL changes
+    # ... any other trusted domains you may have
+]
 
 # Application definition
 
