@@ -32,6 +32,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     ".ngrok-free.dev",
+    "localhost",
+    "127.0.0.1",
 ]
 
 # You must include the protocol (https://)
