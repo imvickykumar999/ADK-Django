@@ -1,155 +1,98 @@
-# Deploying a Flask App with HTTPS using Cloudflare and Nginx
+# Deploying My Django App with HTTPS
 
-Deploying a Flask application with HTTPS involves setting up a web server, configuring DNS, and securing the connection. This guide walks you through deploying a Flask app on a VM, configuring Nginx with Gunicorn, setting up DNS records on Cloudflare, and enabling HTTPS with Let's Encrypt. We'll also cover debugging fixes encountered along the way.
+Here’s a summary of the steps I took, reordered for a more logical deployment flow:
 
-## Prerequisites
-- A Flask app running on a VM (e.g., at `http://157.254.189.17/`).
-- Cloudflare DNS management for your domain (e.g., `imvickykumar999.dpdns.org`).
-- Root access to the VM.
+## 1\. Setting Up Gunicorn as a Systemd Service
 
-## Step 1: Initial Server Setup
-Start by configuring Nginx and Gunicorn to serve your Flask app.
+My first step was to configure **Gunicorn** to run the Django application internally on port **8000**. I created a Systemd service file to manage the process, ensuring it starts on boot and restarts if it fails.
 
-### Create Nginx Configuration
-Edit the Nginx configuration file:
-```
-nano /etc/nginx/sites-available/adk-flask
-```
-Add the following:
-```
-server {
-    listen 80;
-    server_name 157.254.189.17;
-    location / {
-        proxy_pass http://0.0.0.0:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-    location /static/ {
-        alias /home/repo/ADK-Flask/static/;
-    }
-}
-```
-Enable the config and test:
-```
-ln -s /etc/nginx/sites-available/adk-flask /etc/nginx/sites-enabled/
-nginx -t
-systemctl reload nginx
-```
+**File Path:** `/etc/systemd/system/gunicorn-django.service`
 
-### Create Gunicorn Service
-Edit the Gunicorn service file:
-```
-nano /etc/systemd/system/gunicorn.service
-```
-Add:
-```
+```ini
 [Unit]
-Description=Gunicorn instance for ADK-Flask
+Description=Gunicorn instance for ADK-Django
 After=network.target
+
 [Service]
 User=root
 Group=www-data
-WorkingDirectory=/home/repo/ADK-Flask
-ExecStart=/home/repo/ADK-Flask/.venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app
+# Setting the working directory to my project root
+WorkingDirectory=/home/repo/ADK-Django
+
+# The core command: running Gunicorn from the virtual environment, 
+# binding it internally to port 8000, and pointing it to my Django WSGI file.
+ExecStart=/home/repo/ADK-Django/.venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 myadk.wsgi:application
+
 Restart=always
+
 [Install]
 WantedBy=multi-user.target
 ```
-Enable and start the service:
-```
-systemctl daemon-reload
-systemctl start gunicorn
-systemctl enable gunicorn
+
+After saving the file, I ran `sudo systemctl daemon-reload`, then enabled and started the service: `sudo systemctl enable gunicorn-django.service` and `sudo systemctl start gunicorn-django.service`.
+
+-----
+
+## 2\. Configuring Nginx (Initial HTTP Block) and Obtaining the SSL Certificate with Certbot
+
+Before I could finalize the HTTPS configuration, I needed the certificates. I started by creating an **initial Nginx configuration** that only defined the domain and listened on port 80, which is necessary for Certbot's domain verification.
+
+### Initial Nginx Setup & Certbot Command
+
+After creating the basic Nginx file, I ran the following command. The Certbot Nginx plugin did the heavy lifting:
+
+```bash
+sudo certbot --nginx -d adkweb.imvickykumar999.dpdns.org
 ```
 
-## Step 2: Configure DNS on Cloudflare
-To deploy on `https://adk.imvickykumar999.dpdns.org`, update your DNS records.
+### What Certbot Did for Me:
 
-### Add A Record
-Log into [dash.cloudflare.com](https://dash.cloudflare.com), select `imvickykumar999.dpdns.org`, and go to **DNS > Records**.
-Click **Add record** and set:
-- **Type**: `A`
-- **Name**: `adk`
-- **IPv4 address**: `157.254.189.17`
-- **Proxy status**: `DNS only` (grey cloud) for initial setup
-- **TTL**: `Auto`
-Save and wait for propagation. Verify with:
-```
-nslookup adk.imvickykumar999.dpdns.org
-```
-or
-```
-dig adk.imvickykumar999.dpdns.org
-```
+1.  **Domain Verification:** Certbot temporarily proved I owned the domain using the existing Nginx configuration.
+2.  **File Creation:** It generated the certificate files and automatically created the link folder:
+      * **`/etc/letsencrypt/live/adkweb.imvickykumar999.dpdns.org`**: This folder was created, containing symbolic links to the necessary certificate files (`fullchain.pem` and `privkey.pem`).
+3.  **Automatic Nginx Update:** Crucially, it automatically modified my Nginx configuration file to include the HTTPS server block and point the SSL directives to the newly created certificate paths.
 
-### Debug Fix: NXDOMAIN Error
-If Certbot fails with an NXDOMAIN error (indicating the domain can't be resolved), ensure the A record is correctly added and propagated. Switch Proxy status to `DNS only` temporarily, as Cloudflare's proxy can interfere with Let's Encrypt's HTTP challenge.
+-----
 
-## Step 3: Enable HTTPS with Let's Encrypt
-Install Certbot and obtain a certificate:
-```
-apt update
-apt install certbot python3-certbot-nginx
-certbot --nginx -d adk.imvickykumar999.dpdns.org
-```
-Follow the prompts, entering your email (e.g., `imvickykumar999@gmail.com`) and agreeing to the Terms of Service. If it fails with a DNS issue, double-check the A record and retry.
+## 3\. Finalizing the Nginx Server Block Configuration
 
-### Update Nginx for HTTPS
-After Certbot succeeds, certificates are in `/etc/letsencrypt/live/adk.imvickykumar999.dpdns.org/`. Edit the Nginx config:
-```
-nano /etc/nginx/sites-available/adk-flask
-```
-Update to:
-```
+Finally, I reviewed and finalized the Nginx configuration, ensuring it handled static files correctly and proxied requests to the Gunicorn port **8000**.
+
+**Final File Path:** `/etc/nginx/sites-available/adk-django`
+
+```nginx
 server {
+    # Forced redirect: This block (often added or modified by Certbot) 
+    # ensures all HTTP traffic on port 80 goes to HTTPS.
     listen 80;
-    server_name adk.imvickykumar999.dpdns.org;
+    server_name adkweb.imvickykumar999.dpdns.org;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name adk.imvickykumar999.dpdns.org;
-    ssl_certificate /etc/letsencrypt/live/adk.imvickykumar999.dpdns.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/adk.imvickykumar999.dpdns.org/privkey.pem;
+    server_name adkweb.imvickykumar999.dpdns.org;
+
+    # SSL paths inserted by Certbot
+    ssl_certificate /etc/letsencrypt/live/adkweb.imvickykumar999.dpdns.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/adkweb.imvickykumar999.dpdns.org/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
+    # Serving Django Static Files directly for performance
+    location /static/ {
+        alias /home/repo/ADK-Django/staticfiles/;
+    }
+
+    # Proxying dynamic requests to my Gunicorn service on port 8000
     location / {
-        proxy_pass http://0.0.0.0:5000;
+        proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-
-    location /static/ {
-        alias /home/repo/ADK-Flask/static/;
-    }
 }
 ```
-Test and reload:
-```
-nginx -t
-systemctl reload nginx
-```
 
-### Set Up Auto-Renewal
-Test renewal:
-```
-certbot renew --dry-run
-```
-
-## Step 4: Final Verification
-- Visit `https://adk.imvickykumar999.dpdns.org` to confirm the app is live.
-- Optionally, re-enable Cloudflare's proxy (set to `Proxied`) for CDN benefits, as Certbot will handle SSL locally.
-
-## Troubleshooting
-- **NXDOMAIN Fix**: Ensure DNS records are correct and propagated.
-- **Certbot Failure**: Check firewall settings (open ports 80 and 443) and ensure Nginx is running.
-- **Nginx Errors**: Use `nginx -t` to debug config issues.
-
-This setup secures your Flask app with HTTPS and leverages Cloudflare for DNS management. Happy deploying!
+After verifying the final configuration, I ran `nginx -t` and `systemctl restart nginx`. My Django application is now fully deployed and secured over HTTPS\!
