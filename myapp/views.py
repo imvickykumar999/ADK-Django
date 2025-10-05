@@ -180,7 +180,7 @@ class ChatHistoryView(APIView):
         
         # Process the queryset into a list of objects for the frontend
         sessions_list_data = []
-        MAX_NAME_LENGTH = 30
+        MAX_NAME_LENGTH = 25
         
         for item in sessions_qs:
             session_id = item['session_id']

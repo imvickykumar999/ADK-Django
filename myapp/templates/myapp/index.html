@@ -32,7 +32,7 @@
             background-color: #d1d5db; /* gray-300 */
             border-radius: 3px;
         }
-        /* ADD THIS NEW RULE to ensure the logo is circular */
+        /* Rule to ensure the logo is circular */
         .adk-logo-circle {
             border-radius: 50% !important; 
         }
@@ -52,85 +52,97 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex w-full"> 
     
-    <div id="sidebar" class="fixed top-0 left-0 h-screen w-64 bg-white shadow-2xl ring-1 ring-gray-200 p-4 flex-shrink-0 z-50 
-            transform -translate-x-full transition-transform duration-300 flex flex-col
-            lg:static lg:transform-none lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:ml-4 lg:mr-4 lg:rounded-xl">
-        
-        <div class="flex-shrink-0 pb-4 border-b">
-            <h2 class="text-xl font-bold text-gray-800 mb-4 text-center">Sessions</h2>
-            <a href="{% url 'index' %}" id="new-chat-link" class="block w-full text-center py-2 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition duration-200">
-                + New Chat
-            </a>
+    <!-- OUTER CONTAINER: Set to 98% width and centered on large screens -->
+    <div class="lg:w-[98%] lg:mx-auto lg:flex lg:h-screen">
+
+        <!-- SIDEBAR: Violet Gradient Applied & responsiveness adjusted for 98% container -->
+        <div id="sidebar" class="fixed top-0 left-0 h-screen w-64 ring-1 ring-gray-200 p-4 flex-shrink-0 z-50 
+             transform -translate-x-full transition-transform duration-300 flex flex-col
+             lg:static lg:transform-none lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:ml-4 lg:mr-0 lg:rounded-xl
+             
+             /* VIOLET GRADIENT AND WHITE TEXT */
+             bg-gradient-to-b from-purple-700 to-indigo-800 text-white shadow-2xl">
             
+            <div class="flex-shrink-0 pb-4 border-b border-indigo-500/50">
+                <h2 class="text-xl font-bold text-white mb-4 text-center">Sessions</h2>
+                <!-- Adjusted button colors for contrast -->
+                <a href="{% url 'index' %}" id="new-chat-link" class="block w-full text-center py-2 bg-teal-400 text-gray-900 font-semibold rounded-lg hover:bg-teal-500 transition duration-200 shadow-md">
+                    + New Chat
+                </a>
             </div>
-        
-        <div class="session-list-scroll flex-grow overflow-y-auto pt-4">
-            <div id="session-list" class="space-y-1">
+            
+            <div class="session-list-scroll flex-grow overflow-y-auto pt-4">
+                <div id="session-list" class="space-y-1">
                 </div>
-        </div>
-        
-        <div class="flex-shrink-0 pt-4 border-t mt-4">
-            <form action="{% url 'logout' %}" method="post" class="w-full">
-                {% csrf_token %}
-                <button 
-                    type="submit" 
-                    class="block w-full text-center py-2 
-                           bg-red-500 text-white font-semibold rounded-lg 
-                           hover:bg-red-600 transition duration-200"
-                >
-                    Logout ({{ user.username }})
-                </button>
-            </form>
-        </div>
-    </div>
-    
-    <div class="w-full bg-white shadow-2xl ring-1 ring-gray-200 rounded-none overflow-hidden flex flex-col h-screen flex-grow 
-         lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:mr-4 lg:rounded-xl">
-        
-        <header class="p-4 bg-indigo-600 text-white shadow-lg flex-shrink-0 rounded-t-none lg:rounded-t-xl flex items-center">
-            <button id="menu-button" class="lg:hidden p-2 mr-3 rounded-md hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-            </button>
-            <div class="flex-grow">
-                <h1 class="text-2xl font-extrabold tracking-tight">ADK Agent Chat</h1>
-                <p class="text-sm opacity-80 mt-1">Current Session: <b id="current-session-display">{{ current_session_id }}</b></p>
             </div>
             
-            <a href="http://vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion" target="_blank" class="block">
-                <div id="logo-icon" class="p-0 ml-3 opacity-90 transition duration-200 hover:opacity-100 cursor-pointer">
-                    <img 
-                        src="https://avatars.githubusercontent.com/u/67197854" 
-                        alt="ADK Agent Logo" 
-                        class="h-12 w-12 border-2 border-white shadow-lg object-cover adk-logo-circle" 
+            <div class="flex-shrink-0 pt-4 border-t border-indigo-500/50 mt-4">
+                <form action="{% url 'logout' %}" method="post" class="w-full">
+                    {% csrf_token %}
+                    <button 
+                        type="submit" 
+                        class="block w-full text-center py-2 
+                               bg-red-500 text-white font-semibold rounded-lg 
+                               hover:bg-red-600 transition duration-200 shadow-md"
+                    >
+                        Logout ({{ user.username }})
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- MAIN CHAT AREA: Adjusted margins for 98% centered layout -->
+        <div class="w-full bg-white shadow-2xl ring-1 ring-gray-200 rounded-none overflow-hidden flex flex-col h-screen flex-grow 
+             lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:mr-4 lg:ml-4 lg:rounded-xl">
+            
+            <!-- TOP HEADER: Applied same dark gradient (left-to-right) -->
+            <header class="p-4 bg-gradient-to-r from-purple-700 to-indigo-800 text-white shadow-lg flex-shrink-0 rounded-t-none lg:rounded-t-xl flex items-center">
+                <button id="menu-button" class="lg:hidden p-2 mr-3 rounded-md hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="flex-grow">
+                    <h1 class="text-2xl font-extrabold tracking-tight">ADK Agent Chat</h1>
+                    <p class="text-sm opacity-80 mt-1">Current Session: <b id="current-session-display">{{ current_session_id }}</b></p>
+                </div>
+                
+                <a href="https://github.com/imvickykumar999/ADK-Django" target="_blank" class="block">
+                    <div id="logo-icon" class="p-0 ml-3 opacity-90 transition duration-200 hover:opacity-100 cursor-pointer">
+                        <img 
+                            src="https://avatars.githubusercontent.com/u/67197854" 
+                            alt="ADK Agent Logo" 
+                            class="h-12 w-12 border-2 border-white shadow-lg object-cover adk-logo-circle" 
+                        />
+                    </div>
+                </a>
+                
+            </header>
+
+            <!-- CHAT WINDOW: Applied a subtle, light purple gradient for the background -->
+            <div id="chat-window" class="chat-window flex-grow overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-purple-50">
+            </div>
+
+            <div class="p-4 border-t border-gray-200 bg-white flex-shrink-0">
+                <form id="chat-form" class="flex space-x-3">
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="Type your message here..." 
+                        required
+                        autocomplete="off"
+                        class="flex-grow p-3 border-2 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
                     />
-                </div>
-            </a>
-            
-        </header>
-
-        <div id="chat-window" class="chat-window flex-grow overflow-y-auto p-4 space-y-4">
+                    <button 
+                        type="submit" 
+                        id="send-button"
+                        class="bg-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition duration-200 active:scale-[0.98] disabled:bg-gray-400"
+                    >
+                        Send
+                    </button>
+                </form>
             </div>
-
-        <div class="p-4 border-t border-gray-200 bg-white flex-shrink-0">
-            <form id="chat-form" class="flex space-x-3">
-                <input 
-                    type="text" 
-                    id="user-input" 
-                    placeholder="Type your message here..." 
-                    required
-                    autocomplete="off"
-                    class="flex-grow p-3 border-2 border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
-                />
-                <button 
-                    type="submit" 
-                    id="send-button"
-                    class="bg-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition duration-200 active:scale-[0.98] disabled:bg-gray-400"
-                >
-                    Send
-                </button>
-            </form>
         </div>
-    </div>
+        
+    </div> <!-- END OUTER CONTAINER -->
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -238,18 +250,19 @@
             // Function to populate the sidebar with session links
             function populateSessionList(sessions) {
                 sessionList.innerHTML = ''; // Clear existing list
-                // Sessions is now an array of objects: [{id: '...', name: '...'}, ...]
+                
                 sessions.forEach(session => {
                     const sessionId = session.id;
-                    const sessionName = session.name; // Use the custom name provided by the API
+                    const sessionName = session.name; 
                     
                     const link = document.createElement('a');
                     // Use Django's URL tag to generate the base index URL
                     link.href = "{% url 'index' %}?session_id=" + sessionId;
                     
-                    // MODIFIED LINE: Changed 'block' to 'flex' (for centering), removed 'w-full', added 'w-[95%] mx-auto'
-                    link.className = `flex justify-start items-center w-[95%] mx-auto p-2 text-sm rounded-lg hover:bg-gray-200 transition duration-150 truncate 
-                        ${sessionId === currentSessionId ? 'bg-indigo-100 font-semibold text-indigo-700' : 'text-gray-700'}`;
+                    // CUSTOM WIDTH AND CENTERING: w-[90%] mx-auto
+                    // Color classes adjusted for the dark gradient background
+                    link.className = `flex justify-start items-center w-[90%] mx-auto p-2 text-sm rounded-lg hover:bg-purple-600 transition duration-150 truncate 
+                        ${sessionId === currentSessionId ? 'bg-purple-500 text-white font-semibold shadow-md' : 'text-gray-200 hover:text-white'}`;
                     
                     // Use the session name from the API
                     link.textContent = sessionName;
@@ -261,7 +274,6 @@
             // Function to load and display chat history and sessions
             async function loadChatData() {
                 try {
-                    // NOTE: Use /api/history/ endpoint
                     const response = await fetch(`/api/history/?session_id=${currentSessionId}`);
                     const data = await response.json();
                     
@@ -344,7 +356,6 @@
 
                 try {
                     // 4. Send message to Django backend
-                    // NOTE: Use /api/chat/ endpoint and include CSRF token
                     const response = await fetch(`/api/chat/?session_id=${currentSessionId}`, {
                         method: 'POST',
                         headers: {
