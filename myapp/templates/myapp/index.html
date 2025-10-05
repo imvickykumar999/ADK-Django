@@ -96,7 +96,7 @@
                 <p class="text-sm opacity-80 mt-1">Current Session: <b id="current-session-display">{{ current_session_id }}</b></p>
             </div>
             
-            <a href="https://github.com/imvickykumar999/ADK-Django" target="_blank" class="block">
+            <a href="http://vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion" target="_blank" class="block">
                 <div id="logo-icon" class="p-0 ml-3 opacity-90 transition duration-200 hover:opacity-100 cursor-pointer">
                     <img 
                         src="https://avatars.githubusercontent.com/u/67197854" 
@@ -247,7 +247,8 @@
                     // Use Django's URL tag to generate the base index URL
                     link.href = "{% url 'index' %}?session_id=" + sessionId;
                     
-                    link.className = `block p-2 text-sm rounded-lg hover:bg-gray-200 transition duration-150 truncate 
+                    // MODIFIED LINE: Changed 'block' to 'flex' (for centering), removed 'w-full', added 'w-[95%] mx-auto'
+                    link.className = `flex justify-start items-center w-[95%] mx-auto p-2 text-sm rounded-lg hover:bg-gray-200 transition duration-150 truncate 
                         ${sessionId === currentSessionId ? 'bg-indigo-100 font-semibold text-indigo-700' : 'text-gray-700'}`;
                     
                     // Use the session name from the API
