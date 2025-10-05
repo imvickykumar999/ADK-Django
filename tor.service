@@ -1,0 +1,22 @@
+  GNU nano 6.2                                                        /lib/systemd/system/tor.service                                                                  [Unit]
+
+[Unit]
+Description=Anonymizing overlay network for TCP
+After=network.target nss-lookup.target
+
+[Service]
+Type=simple
+User=debian-tor
+Group=debian-tor
+# Execute the Tor binary and point it to the configuration file
+ExecStart=/usr/bin/tor -f /etc/tor/torrc --RunAsDaemon 0
+ExecReload=/bin/kill -HUP $MAINPID
+TimeoutStartSec=300
+TimeoutStopSec=30
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+PIDFile=/run/tor/tor.pid
+
+[Install]
+WantedBy=multi-user.target

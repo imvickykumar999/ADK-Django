@@ -1,0 +1,44 @@
+#   GNU nano 6.2                                                     /etc/nginx/sites-available/adk-django                                                               server {
+
+server {
+        # Redirects all HTTP traffic for the public domain to HTTPS.
+        listen 80;
+        server_name adkweb.imvickykumar999.dpdns.org;
+        return 301 https://$host$request_uri;
+}
+
+# TOR HIDDEN SERVICE BLOCK (HTTP over port 80)
+server {
+        listen 80;
+        server_name vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion;
+        location /static/ {
+                alias /home/repo/ADK-Django/staticfiles/;
+        }
+        location / {
+                proxy_pass http://127.0.0.1:8000;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto http;
+        }
+}
+
+# PUBLIC INTERNET BLOCK (HTTPS over port 443)
+server {
+        listen 443 ssl http2;
+        server_name adkweb.imvickykumar999.dpdns.org;
+        ssl_certificate /etc/letsencrypt/live/adkweb.imvickykumar999.dpdns.org/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/adkweb.imvickykumar999.dpdns.org/privkey.pem;
+        include /etc/letsencrypt/options-ssl-nginx.conf;
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+        location /static/ {
+                alias /home/repo/ADK-Django/staticfiles/;
+        }
+        location / {
+                proxy_pass http://127.0.0.1:8000;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+        }
+}

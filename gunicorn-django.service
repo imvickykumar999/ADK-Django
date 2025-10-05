@@ -1,0 +1,20 @@
+  GNU nano 6.2                                                  /etc/systemd/system/gunicorn-django.service                                                            [Unit]
+
+[Unit]
+Description=Gunicorn instance for ADK-Django
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+# Setting the working directory to my project root
+WorkingDirectory=/home/repo/ADK-Django
+
+# The core command: running Gunicorn from the virtual environment,
+# binding it internally to port 8000, and pointing it to my Django WSGI file.
+ExecStart=/home/repo/ADK-Django/.venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 myadk.wsgi:application
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
