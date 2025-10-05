@@ -1,149 +1,159 @@
-# Hosting on Custom Onion URL
+# 🔒 Summary: Hosting Django on Tor
 
-Here are the steps to set up your Flask application as a Tor Hidden Service.
+This workflow assumes your Django project is running via **Gunicorn on port 8000** and that Nginx is already installed and set up for your public domain.
+
+### 1\. Prerequisite: Install Tor
+
+Ensure the Tor daemon is installed on your server.
+
+| Command | Purpose |
+| :--- | :--- |
+| `sudo apt update` | Update package list. |
+| `sudo apt install tor` | Install the Tor daemon. |
 
 -----
 
-## 1\. Install Tor
+### 2\. Configure Tor Hidden Service
 
-First, install the Tor service package on your Linux server.
+We need to tell the Tor service where to find its private keys and where to forward the decrypted `.onion` traffic (to Nginx's internal HTTP port 80).
 
-```bash
-sudo apt update
-sudo apt install tor
-```
+**File:** `/etc/tor/torrc`
 
-## 2\. Configure the Hidden Service
+| Command | Purpose |
+| :--- | :--- |
+| `sudo nano /etc/tor/torrc` | Open the config file. |
+| `sudo cat /home/repo/vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion/hostname` | **Get the `.onion` address** (save this address). |
 
-Next, you need to edit the Tor configuration file (`torrc`) to define your new Hidden Service.
-
-```bash
-sudo nano /etc/tor/torrc
-```
-
-Scroll to the end of the file and add the following lines. This tells Tor to create a new service and defines where traffic to that service's unique `.onion` port 80 should be forwarded (proxied) internally.
+**Content to Add/Verify in `/etc/tor/torrc`:**
 
 ```ini
-# Hidden Service for ADK-Flask on Gunicorn Port 5000
-HiddenServiceDir /var/lib/tor/adk_flask_service/
-HiddenServicePort 80 127.0.0.1:5000
-```
-
-  * **`HiddenServiceDir`**: This directory will be created by Tor and will contain the private key and the file storing your unique `.onion` address.
-  * **`HiddenServicePort 80 127.0.0.1:5000`**: This maps external Tor requests on port **80** (the standard web port) to your local Gunicorn process running on **127.0.0.1:5000**.
-
-## 3\. Restart Tor and Retrieve the .onion Address
-
-Save and close the `torrc` file, then restart the Tor service.
-
-```bash
-sudo systemctl restart tor
-```
-
-The unique `.onion` address is automatically generated and stored in the `hostname` file within the service directory. Retrieve it using the following command:
-
-```bash
-sudo cat /var/lib/tor/adk_flask_service/hostname
-```
-
-This command will output your permanent Tor address, which will look something like:
-
-`[32_or_56_character_string].onion`
-
------
-
-## 4\. Final Steps (No Nginx/Gunicorn Changes Required)
-
-You do **not** need to change your Nginx or Gunicorn service files because:
-
-  * **Nginx is bypassed:** Traffic from Tor goes directly to the Tor daemon, which forwards it internally to Gunicorn. Nginx is no longer needed for this traffic path.
-  * **Gunicorn is already configured:** Your Gunicorn process is already listening on `0.0.0.0:5000`, which includes the loopback address (`127.0.0.1`) that Tor is using for its forwarding.
-
-You can now access your application via the `.onion` address (e.g., `http://[your_onion_address].onion`) using the Tor Browser.
-
-## 1\. Local File Transfer (Windows to Server)
-
-Create custom onion URL from https://github.com/imvickykumar999/CustomOnionURL
-
-You used `scp` to transfer your pre-generated Tor private key archive to the server's `/home/repo/` directory:
-
-```bash
-scp "C:\Users\surface\Documents\task\vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion.zip" root@157.254.189.17:/home/repo/
+# --- Hidden Service Configuration ---
+# Use the directory containing the hostname and key files:
+HiddenServiceDir /home/repo/vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion/
+# Forward virtual port 80 (Tor traffic) to Nginx's local port 80
+HiddenServicePort 80 127.0.0.1:80
 ```
 
 -----
 
-## 2\. Gunicorn Service Setup (Internal Application Host)
+### 3\. Configure Nginx for the Onion Address
 
-You corrected and restarted your Gunicorn service to ensure the Flask application runs reliably using the correct WSGI worker on port **5000** (matching your Nginx configuration).
+We must add a new `server` block to Nginx to handle traffic specifically coming from the Tor service (which arrives locally on port 80).
 
-```bash
-# Edit the service file (ensure the content is correct, without Uvicorn worker)
-sudo nano /etc/systemd/system/gunicorn.service
+**File:** `/etc/nginx/sites-available/adk-django`
 
-# Apply the changes and restart
-sudo systemctl daemon-reload
-sudo systemctl restart gunicorn.service
+| Command | Purpose |
+| :--- | :--- |
+| `sudo nano /etc/nginx/sites-available/adk-django` | Open the Nginx config file. |
+
+**Final Nginx Configuration (Full Content):**
+
+```nginx
+server {
+    # Redirects all HTTP traffic for the public domain to HTTPS.
+    listen 80;
+    server_name adkweb.imvickykumar999.dpdns.org;
+    return 301 https://$host$request_uri;
+}
+
+# --- TOR HIDDEN SERVICE BLOCK (HTTP over port 80) ---
+server {
+    # Listen on port 80 for traffic coming from the Tor service
+    listen 80; 
+    
+    # Use the specific Onion address as the server name (e.g., vickyme6yw...)
+    server_name vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion;
+
+    # Serving Django Static Files directly for performance
+    location /static/ {
+        alias /home/repo/ADK-Django/staticfiles/;
+    }
+
+    # Proxying dynamic requests to my Gunicorn service on port 8000
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto http; 
+    }
+}
+
+
+# --- PUBLIC INTERNET BLOCK (HTTPS over port 443) ---
+server {
+    listen 443 ssl http2;
+    server_name adkweb.imvickykumar999.dpdns.org;
+
+    # SSL paths inserted by Certbot
+    ssl_certificate /etc/letsencrypt/live/adkweb.imvickykumar999.dpdns.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/adkweb.imvickykumar999.dpdns.org/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Serving Django Static Files directly for performance
+    location /static/ {
+        alias /home/repo/ADK-Django/staticfiles/;
+    }
+
+    # Proxying dynamic requests to my Gunicorn service on port 8000
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
 ```
 
-The correct `ExecStart` line in the file is:
+-----
+
+### 4\. Correct the Tor Service File
+
+This was the biggest roadblock. We had to fix the Systemd definition to run the actual Tor daemon instead of the dummy service.
+
+**File:** `/lib/systemd/system/tor.service`
+
+| Command | Purpose |
+| :--- | :--- |
+| `sudo nano /lib/systemd/system/tor.service` | Open the Tor service file. |
+
+**Key Lines to Verify/Set in `/lib/systemd/system/tor.service`:**
+*Note: Make sure to remove the unsupported `--defaults-path` option.*
 
 ```ini
-ExecStart=/home/repo/ADK-Flask/.venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app
+[Unit]
+Description=Anonymizing overlay network for TCP
+# ...
+
+[Service]
+Type=simple
+User=debian-tor
+Group=debian-tor
+# CORRECTED: Runs the Tor binary, pointing to the config file
+ExecStart=/usr/bin/tor -f /etc/tor/torrc --RunAsDaemon 0
+ExecReload=/bin/kill -HUP $MAINPID
+# ...
+
+[Install]
+# ...
 ```
 
 -----
 
-## 3\. Basic Tor Installation and Configuration
+### 5\. Final Commands (The Essential Sequence)
 
-You installed the Tor service and configured it to use a Hidden Service that maps to your Gunicorn application.
+After making all file changes, run this sequence to ensure permissions are right and services are restarted:
 
-```bash
-# Install the Tor service
-sudo apt update
-sudo apt install tor
+| Command | Purpose |
+| :--- | :--- |
+| `sudo chown -R debian-tor:debian-tor /home/repo/vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion/` | **CRITICAL:** Gives Tor permission to read its key files. |
+| `sudo chmod 700 /home/repo/vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion/` | Sets necessary restrictive permissions. |
+| `sudo systemctl daemon-reload` | Reload Systemd to register the corrected `tor.service` file. |
+| `sudo nginx -t` | **Verify** Nginx syntax (must succeed before proceeding). |
+| `sudo systemctl restart nginx` | Apply the new Nginx Tor configuration. |
+| `sudo systemctl restart tor` | Start the fully functional Tor daemon. |
+| `sudo systemctl status tor` | Confirm the status is **`Active: active (running)`**. |
 
-# Edit the Tor configuration file
-sudo nano /etc/tor/torrc
-```
-
-You added these lines to the `torrc` file:
-
-```ini
-# Hidden Service for ADK-Flask on Gunicorn Port 5000
-HiddenServiceDir /var/lib/tor/adk_flask_service/
-HiddenServicePort 80 127.0.0.1:5000
-```
-
------
-
-## 4\. Activating the Permanent .onion Address
-
-This is the most crucial step, where you replaced the automatically generated keys with your permanent keys to ensure a stable `.onion` address.
-
-Assuming you are currently in the directory containing the unzipped keys (`/home/repo/vickyme6ywivszfs6c2oekjxgatrl7xykwsc355llydysuj7eexokfyd.onion/`):
-
-```bash
-# 1. Stop the Tor service
-sudo systemctl stop tor
-
-# 2. Delete the temporary keys generated by Tor
-sudo rm /var/lib/tor/adk_flask_service/hostname
-sudo rm /var/lib/tor/adk_flask_service/hs_ed25519_public_key
-sudo rm /var/lib/tor/adk_flask_service/hs_ed25519_secret_key
-
-# 3. Copy the permanent keys into the Tor service directory
-sudo cp hostname /var/lib/tor/adk_flask_service/
-sudo cp hs_ed25519_public_key /var/lib/tor/adk_flask_service/
-sudo cp hs_ed25519_secret_key /var/lib/tor/adk_flask_service/
-
-# 4. Set the correct ownership and permissions (CRITICAL for Tor security)
-sudo chown -R debian-tor:debian-tor /var/lib/tor/adk_flask_service/
-sudo chmod 600 /var/lib/tor/adk_flask_service/hs_ed25519_secret_key
-
-# 5. Restart Tor to activate the permanent address
-sudo systemctl restart tor
-
-# 6. Verify the permanent address (optional, but good practice)
-sudo cat /var/lib/tor/adk_flask_service/hostname
-```
+Your Django application should now be successfully hosted on Tor\!
