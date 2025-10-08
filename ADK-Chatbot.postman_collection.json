@@ -107,12 +107,12 @@
 					"basic": [
 						{
 							"key": "username",
-							"value": "1",
+							"value": "{{username}}",
 							"type": "string"
 						},
 						{
 							"key": "password",
-							"value": "1",
+							"value": "{{password}}",
 							"type": "string"
 						}
 					]
