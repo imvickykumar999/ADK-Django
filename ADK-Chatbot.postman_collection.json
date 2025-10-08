@@ -29,7 +29,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\"message\": \"Full form?\"}",
+					"raw": "{\n    // \"message\": \"What is API?\"\n    \"message\": \"Compare it with MCP?\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -37,15 +37,13 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8000/api/chat/?session_id=ae89f544",
-					"protocol": "http",
+					"raw": "https://adkweb.pythonanywhere.com/api/chat/?session_id=ae89f544",
+					"protocol": "https",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"adkweb",
+						"pythonanywhere",
+						"com"
 					],
-					"port": "8000",
 					"path": [
 						"api",
 						"chat",
@@ -63,6 +61,46 @@
 		},
 		{
 			"name": "Chat History",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var template = `",
+							"<style type=\"text/css\">",
+							"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}",
+							"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}",
+							"    .tftable tr {background-color:#ffffff;}",
+							"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}",
+							"    .tftable tr:hover {background-color:#e0ffff;}",
+							"</style>",
+							"",
+							"<table class=\"tftable\" border=\"1\">",
+							"    <tr>",
+							"        <th>Session ID</th>",
+							"        <th>Name</th>",
+							"    </tr>",
+							"    ",
+							"    {{#each response.sessions}}",
+							"        <tr>",
+							"            <td>{{id}}</td>",
+							"            <td>{{name}}</td>",
+							"        </tr>",
+							"    {{/each}}",
+							"</table>",
+							"`;",
+							"",
+							"function constructVisualizerPayload() {",
+							"    return { response: pm.response.json() };",
+							"}",
+							"",
+							"pm.visualizer.set(template, constructVisualizerPayload());"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "basic",
@@ -82,15 +120,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8000/api/history/?session_id=56f1a14f",
-					"protocol": "http",
+					"raw": "https://adkweb.pythonanywhere.com/api/history/?session_id=56f1a14f",
+					"protocol": "https",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"adkweb",
+						"pythonanywhere",
+						"com"
 					],
-					"port": "8000",
 					"path": [
 						"api",
 						"history",
