@@ -1,10 +1,11 @@
 {
 	"info": {
-		"_postman_id": "f1242569-f239-4e2c-bf58-70a3e1e88de1",
+		"_postman_id": "00dcde12-c350-4567-a0e9-a6f8f4564596",
 		"name": "ADK-Chatbot",
+		"description": "[https://github.com/imvickykumar999/ADK-Django/blob/main/ADK-Chatbot.postman_collection.json](https://github.com/imvickykumar999/ADK-Django/blob/main/ADK-Chatbot.postman_collection.json)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "25350357",
-		"_collection_link": "https://grey-flare-687554.postman.co/workspace/My-Workspace~f66982bb-efa3-4d6d-84f1-13a23da04d43/collection/25350357-f1242569-f239-4e2c-bf58-70a3e1e88de1?action=share&source=collection_link&creator=25350357"
+		"_exporter_id": "14965750",
+		"_collection_link": "https://gold-trinity-363196.postman.co/workspace/GitHub-Views-Tracker~d48918f1-45f9-4583-b551-b9e5c7e535d1/collection/14965750-00dcde12-c350-4567-a0e9-a6f8f4564596?action=share&source=collection_link&creator=14965750"
 	},
 	"item": [
 		{
