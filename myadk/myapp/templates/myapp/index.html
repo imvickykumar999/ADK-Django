@@ -46,6 +46,33 @@
             opacity: 0 !important;
             visibility: hidden !important;
         }
+
+        /* 🖼️ NEW CUSTOM RULE FOR CHAT BACKGROUND IMAGE 🖼️ */
+        .chat-background {
+            /* Replace the URL below with your preferred image source */
+            background-image: url('https://static.vecteezy.com/system/resources/previews/049/855/259/non_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-photo.jpg');
+            background-size: cover; /* Ensures the image covers the entire container */
+            background-position: center; /* Centers the image */
+            background-repeat: no-repeat; /* Prevents image tiling */
+        }
+        
+        /* Optional: Add a subtle overlay to improve text readability on a busy background */
+        .chat-background::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1); /* White transparent overlay */
+            pointer-events: none; /* Allows clicks to pass through */
+        }
+
+        /* Make sure the chat window itself establishes a positioning context for the ::before pseudo-element */
+        #chat-window {
+            position: relative;
+        }
+        
     </style>
     <script>
         // Set up Tailwind configuration for the Inter font
@@ -62,10 +89,8 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex w-full"> 
     
-    <!-- OUTER CONTAINER: Set to 98% width and centered on large screens -->
     <div class="lg:w-[98%] lg:mx-auto lg:flex lg:h-screen">
 
-        <!-- SIDEBAR: Dynamic Gradient Applied & responsiveness adjusted for 98% container -->
         <div id="sidebar" class="fixed top-0 left-0 h-screen w-64 ring-1 ring-gray-200 p-4 flex-shrink-0 z-50 
              transform -translate-x-full transition-transform duration-300 flex flex-col
              lg:static lg:transform-none lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:ml-4 lg:mr-0 lg:rounded-xl
@@ -76,7 +101,6 @@
             <div class="flex-shrink-0 pb-4 border-b border-{{ MyThemeColor }}-500/50">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-white">Sessions</h2>
-                    <!-- Settings Icon -->
                     <button id="settings-button" class="p-1 rounded-full text-white/80 hover:bg-{{ MyThemeColor }}-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37z"></path>
@@ -84,7 +108,6 @@
                         </svg>
                     </button>
                 </div>
-                <!-- Adjusted button colors for contrast -->
                 <a href="{% url 'index' %}" id="new-chat-link" class="block w-full text-center py-2 bg-teal-400 text-gray-900 font-semibold rounded-lg hover:bg-teal-500 transition duration-200 shadow-md">
                     + New Chat
                 </a>
@@ -101,8 +124,8 @@
                     <button 
                         type="submit" 
                         class="block w-full text-center py-2 
-                               bg-red-500 text-white font-semibold rounded-lg 
-                               hover:bg-red-600 transition duration-200 shadow-md"
+                                 bg-red-500 text-white font-semibold rounded-lg 
+                                 hover:bg-red-600 transition duration-200 shadow-md"
                     >
                         Logout ({{ user.username }})
                     </button>
@@ -110,11 +133,9 @@
             </div>
         </div>
         
-        <!-- MAIN CHAT AREA: Adjusted margins for 98% centered layout -->
         <div class="w-full bg-white shadow-2xl ring-1 ring-gray-200 rounded-none overflow-hidden flex flex-col h-screen flex-grow 
              lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:mr-4 lg:ml-4 lg:rounded-xl">
             
-            <!-- TOP HEADER: Applied same dark gradient (left-to-right) -->
             <header class="p-4 bg-gradient-to-r from-{{ MyThemeColor }}-700 to-{{ MyThemeColor }}-800 text-white shadow-lg flex-shrink-0 rounded-t-none lg:rounded-t-xl flex items-center">
                 <button id="menu-button" class="lg:hidden p-2 mr-3 rounded-md hover:bg-{{ MyThemeColor }}-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -136,8 +157,7 @@
                 
             </header>
 
-            <!-- CHAT WINDOW: Applied a subtle, light theme gradient for the background -->
-            <div id="chat-window" class="chat-window flex-grow overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-{{ MyThemeColor }}-50">
+            <div id="chat-window" class="chat-window flex-grow overflow-y-auto p-4 space-y-4 chat-background">
             </div>
 
             <div class="p-4 border-t border-gray-200 bg-white flex-shrink-0">
@@ -161,14 +181,10 @@
             </div>
         </div>
         
-    </div> <!-- END OUTER CONTAINER -->
-    
-    <!-- SETTINGS MODAL -->
-    <div id="settings-modal" class="modal-inactive fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
-        <!-- Modal Content -->
+    </div> <div id="settings-modal" class="modal-inactive fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
         <div id="settings-modal-content" class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg mx-4 transform transition-all scale-95 opacity-0 duration-300">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-2xl font-bold text-gray-800">App Customization</h3>
+                <h3 class="text-2xl font-bold text-gray-800">Brand Customization</h3>
                 <button id="close-modal-button" type="button" class="text-gray-400 hover:text-gray-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -195,8 +211,7 @@
                 <div class="flex flex-col">
                     <label for="theme_color" class="font-semibold text-gray-700 mb-2">Theme Color</label>
                     <div id="color-options" class="flex flex-wrap gap-2">
-                        <!-- Color radio buttons will be inserted here by JS -->
-                    </div>
+                        </div>
                 </div>
 
                 <button type="submit" id="save-settings-button"
@@ -207,8 +222,6 @@
             </form>
         </div>
     </div>
-    <!-- END SETTINGS MODAL -->
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const currentSessionId = "{{ current_session_id }}"; 
@@ -372,8 +385,8 @@
                     }
 
                     input.addEventListener('change', () => {
-                         // Rerender to update the checkmark/ring visually
-                         renderColorOptions(input.value);
+                          // Rerender to update the checkmark/ring visually
+                          renderColorOptions(input.value);
                     });
                     
                     container.appendChild(input);
@@ -439,7 +452,7 @@
                     settingsMessage.classList.remove('text-gray-600');
                     settingsMessage.classList.add('text-red-600');
                     settingsMessage.textContent = 'Network error during save.';
-                    console.error("Fetch error during save:", error);
+                    console.error('Fetch error during save:', error);
                 } finally {
                     settingsMessage.classList.remove('hidden');
                 }
