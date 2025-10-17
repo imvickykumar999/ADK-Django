@@ -1,0 +1,5 @@
+django 
+django-jazzmin
+djangorestframework 
+google-adk 
+gunicorn
