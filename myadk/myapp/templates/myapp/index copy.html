@@ -1,0 +1,636 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ MyWebsiteLogo }}" rel="icon">
+    
+    <title>{{ MyWebsiteName }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Scrollbar for Chat Window */
+        .chat-window::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-window::-webkit-scrollbar-thumb {
+            background-color: #a3a3a3; /* gray-400 */
+            border-radius: 4px;
+        }
+        .chat-window::-webkit-scrollbar-track {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        /* Use Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for Session List */
+        .session-list-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .session-list-scroll::-webkit-scrollbar-thumb {
+            background-color: #d1d5db; /* gray-300 */
+            border-radius: 3px;
+        }
+        /* Rule to ensure the logo is circular */
+        .adk-logo-circle {
+            border-radius: 50% !important; 
+        }
+
+        /* Utility to hide/show modal */
+        .modal-active {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        .modal-inactive {
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+    </style>
+    <script>
+        // Set up Tailwind configuration for the Inter font
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen flex w-full"> 
+    
+    <!-- OUTER CONTAINER: Set to 98% width and centered on large screens -->
+    <div class="lg:w-[98%] lg:mx-auto lg:flex lg:h-screen">
+
+        <!-- SIDEBAR: Dynamic Gradient Applied & responsiveness adjusted for 98% container -->
+        <div id="sidebar" class="fixed top-0 left-0 h-screen w-64 ring-1 ring-gray-200 p-4 flex-shrink-0 z-50 
+             transform -translate-x-full transition-transform duration-300 flex flex-col
+             lg:static lg:transform-none lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:ml-4 lg:mr-0 lg:rounded-xl
+             
+             /* DYNAMIC GRADIENT AND WHITE TEXT */
+             bg-gradient-to-b from-{{ MyThemeColor }}-700 to-{{ MyThemeColor }}-800 text-white shadow-2xl">
+            
+            <div class="flex-shrink-0 pb-4 border-b border-{{ MyThemeColor }}-500/50">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-white">Sessions</h2>
+                    <!-- Settings Icon -->
+                    <button id="settings-button" class="p-1 rounded-full text-white/80 hover:bg-{{ MyThemeColor }}-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Adjusted button colors for contrast -->
+                <a href="{% url 'index' %}" id="new-chat-link" class="block w-full text-center py-2 bg-teal-400 text-gray-900 font-semibold rounded-lg hover:bg-teal-500 transition duration-200 shadow-md">
+                    + New Chat
+                </a>
+            </div>
+            
+            <div class="session-list-scroll flex-grow overflow-y-auto pt-4">
+                <div id="session-list" class="space-y-1">
+                </div>
+            </div>
+            
+            <div class="flex-shrink-0 pt-4 border-t border-{{ MyThemeColor }}-500/50 mt-4">
+                <form action="{% url 'logout' %}" method="post" class="w-full">
+                    {% csrf_token %}
+                    <button 
+                        type="submit" 
+                        class="block w-full text-center py-2 
+                               bg-red-500 text-white font-semibold rounded-lg 
+                               hover:bg-red-600 transition duration-200 shadow-md"
+                    >
+                        Logout ({{ user.username }})
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- MAIN CHAT AREA: Adjusted margins for 98% centered layout -->
+        <div class="w-full bg-white shadow-2xl ring-1 ring-gray-200 rounded-none overflow-hidden flex flex-col h-screen flex-grow 
+             lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:mr-4 lg:ml-4 lg:rounded-xl">
+            
+            <!-- TOP HEADER: Applied same dark gradient (left-to-right) -->
+            <header class="p-4 bg-gradient-to-r from-{{ MyThemeColor }}-700 to-{{ MyThemeColor }}-800 text-white shadow-lg flex-shrink-0 rounded-t-none lg:rounded-t-xl flex items-center">
+                <button id="menu-button" class="lg:hidden p-2 mr-3 rounded-md hover:bg-{{ MyThemeColor }}-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="flex-grow">
+                    <h1 class="text-2xl font-extrabold tracking-tight">{{ MyWebsiteName }}</h1>
+                    <p class="text-sm opacity-80 mt-1">Current Session: <b id="current-session-display">{{ current_session_id }}</b></p>
+                </div>
+                
+                <a href="{{ MyWebsiteLink }}" target="_blank" class="block">
+                    <div id="logo-icon" class="p-0 ml-3 opacity-90 transition duration-200 hover:opacity-100 cursor-pointer">
+                        <img 
+                            src="{{ MyWebsiteLogo }}" 
+                            alt="ADK Agent Logo" 
+                            class="h-12 w-12 border-white shadow-lg object-cover adk-logo-circle" 
+                        />
+                    </div>
+                </a>
+                
+            </header>
+
+            <!-- CHAT WINDOW: Applied a subtle, light theme gradient for the background -->
+            <div id="chat-window" class="chat-window flex-grow overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-{{ MyThemeColor }}-50">
+            </div>
+
+            <div class="p-4 border-t border-gray-200 bg-white flex-shrink-0">
+                <form id="chat-form" class="flex space-x-3">
+                    <input 
+                        type="text" 
+                        id="user-input" 
+                        placeholder="Type your message here..." 
+                        required
+                        autocomplete="off"
+                        class="flex-grow p-3 border-2 border-gray-300 rounded-xl focus:ring-{{ MyThemeColor }}-500 focus:border-{{ MyThemeColor }}-500 transition duration-200"
+                    />
+                    <button 
+                        type="submit" 
+                        id="send-button"
+                        class="bg-{{ MyThemeColor }}-600 text-white p-3 rounded-xl font-bold shadow-lg hover:bg-{{ MyThemeColor }}-700 transition duration-200 active:scale-[0.98] disabled:bg-gray-400"
+                    >
+                        Send
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+    </div> <!-- END OUTER CONTAINER -->
+    
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-inactive fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+        <!-- Modal Content -->
+        <div id="settings-modal-content" class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg mx-4 transform transition-all scale-95 opacity-0 duration-300">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-2xl font-bold text-gray-800">Brand Customization</h3>
+                <button id="close-modal-button" type="button" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form id="settings-form" class="space-y-4">
+                <div class="flex flex-col">
+                    <label for="website_name" class="font-semibold text-gray-700 mb-1">Brand Name</label>
+                    <input type="text" id="website_name" name="website_name" required
+                           class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div class="flex flex-col">
+                    <label for="website_link" class="font-semibold text-gray-700 mb-1">Website Link</label>
+                    <input type="url" id="website_link" name="website_link" required
+                           class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="flex flex-col">
+                    <label for="website_logo_url" class="font-semibold text-gray-700 mb-1">Logo URL</label>
+                    <input type="url" id="website_logo_url" name="website_logo_url" required
+                           class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="flex flex-col">
+                    <label for="theme_color" class="font-semibold text-gray-700 mb-2">Theme Color</label>
+                    <div id="color-options" class="flex flex-wrap gap-2">
+                        <!-- Color radio buttons will be inserted here by JS -->
+                    </div>
+                </div>
+
+                <button type="submit" id="save-settings-button"
+                        class="w-full bg-{{ MyThemeColor }}-600 text-white p-3 rounded-xl font-bold shadow-lg hover:bg-{{ MyThemeColor }}-700 transition duration-200 disabled:bg-gray-400">
+                    Save Settings
+                </button>
+                <div id="settings-message" class="text-center text-sm mt-2 hidden"></div>
+            </form>
+        </div>
+    </div>
+    <!-- END SETTINGS MODAL -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentSessionId = "{{ current_session_id }}"; 
+            const form = document.getElementById('chat-form');
+            const userInput = document.getElementById('user-input');
+            const chatWindow = document.getElementById('chat-window');
+            const sendButton = document.getElementById('send-button');
+            const sidebar = document.getElementById('sidebar');
+            const menuButton = document.getElementById('menu-button');
+            const sessionList = document.getElementById('session-list');
+            
+            // Settings Modal Elements
+            const settingsButton = document.getElementById('settings-button');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeModalButton = document.getElementById('close-modal-button');
+            const settingsForm = document.getElementById('settings-form');
+            const settingsMessage = document.getElementById('settings-message');
+            const settingsModalContent = document.getElementById('settings-modal-content');
+            
+            // Dynamic color variable for use in JS
+            let themeColorName = "{{ MyThemeColor }}"; 
+            
+            // Define available Tailwind colors for the picker. MUST MATCH models.COLOR_CHOICES.
+            const COLOR_OPTIONS = [
+                'indigo', 
+                'blue', 
+                'purple', 
+                'teal', 
+                'emerald', 
+                'rose', 
+                'orange', 
+                'red', 
+                'pink'
+            ];
+
+            // Function to get CSRF token (required for Django POST/PATCH requests)
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken');
+
+
+            // --- Smooth Scroll Function ---
+            function scrollToBottom() {
+                chatWindow.scrollTo({
+                    top: chatWindow.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+
+            // --- Sidebar Logic ---
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black opacity-0 transition-opacity duration-300 z-40 lg:hidden pointer-events-none';
+            document.body.appendChild(overlay);
+
+            let isSidebarOpen = false;
+
+            function toggleSidebar(open) {
+                // Only run on mobile (screen width < 1024px, the 'lg' breakpoint)
+                if (window.innerWidth >= 1024) return;
+                
+                isSidebarOpen = (open !== undefined) ? open : !isSidebarOpen;
+
+                if (isSidebarOpen) {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('opacity-0', 'pointer-events-none');
+                    overlay.classList.add('opacity-50', 'pointer-events-auto');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.remove('opacity-50', 'pointer-events-auto');
+                    overlay.classList.add('opacity-0', 'pointer-events-none');
+                }
+            }
+
+            menuButton.addEventListener('click', () => {
+                toggleSidebar();
+            });
+            
+            // Close sidebar when clicking the overlay
+            overlay.addEventListener('click', () => {
+                toggleSidebar(false);
+            });
+
+            // --- End Sidebar Logic ---
+            
+            
+            // --- Settings Modal Logic ---
+            
+            function toggleModal(show) {
+                if (show) {
+                    settingsModal.classList.remove('modal-inactive');
+                    settingsModal.classList.add('modal-active');
+                    setTimeout(() => {
+                        settingsModalContent.classList.remove('scale-95', 'opacity-0');
+                        settingsModalContent.classList.add('scale-100', 'opacity-100');
+                    }, 10);
+                    fetchSettings();
+                } else {
+                    settingsModalContent.classList.remove('scale-100', 'opacity-100');
+                    settingsModalContent.classList.add('scale-95', 'opacity-0');
+                    setTimeout(() => {
+                        settingsModal.classList.remove('modal-active');
+                        settingsModal.classList.add('modal-inactive');
+                        settingsMessage.innerHTML = ''; // Clear status message
+                        settingsMessage.classList.add('hidden');
+                    }, 300); // Duration matches CSS transition
+                }
+            }
+            
+            settingsButton.addEventListener('click', () => toggleModal(true));
+            closeModalButton.addEventListener('click', () => toggleModal(false));
+            settingsModal.addEventListener('click', (e) => {
+                // Close when clicking outside the modal content
+                if (e.target === settingsModal) {
+                    toggleModal(false);
+                }
+            });
+
+
+            function renderColorOptions(currentTheme) {
+                const colorOptionsDiv = document.getElementById('color-options');
+                colorOptionsDiv.innerHTML = '';
+
+                COLOR_OPTIONS.forEach(color => {
+                    const id = `color-${color}`;
+                    const isChecked = color === currentTheme;
+                    
+                    const container = document.createElement('div');
+                    container.className = 'relative';
+
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = 'theme_color';
+                    input.id = id;
+                    input.value = color;
+                    input.className = 'hidden';
+                    if (isChecked) {
+                        input.checked = true;
+                    }
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = id;
+                    // Use a stronger color class like 600 or 700 for the circle
+                    label.className = `w-10 h-10 rounded-full cursor-pointer bg-${color}-600 block shadow-md transition duration-150 hover:ring-4 ring-offset-2 ring-gray-300`;
+                    
+                    if (isChecked) {
+                        // Add a visible indicator when selected
+                        label.innerHTML = `<svg class="w-full h-full text-white p-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>`;
+                        label.classList.add(`ring-4`, `ring-${color}-500`);
+                    }
+
+                    input.addEventListener('change', () => {
+                         // Rerender to update the checkmark/ring visually
+                         renderColorOptions(input.value);
+                    });
+                    
+                    container.appendChild(input);
+                    container.appendChild(label);
+                    colorOptionsDiv.appendChild(container);
+                });
+            }
+
+            async function fetchSettings() {
+                try {
+                    const response = await fetch('/api/settings/');
+                    if (response.ok) {
+                        const data = await response.json();
+                        document.getElementById('website_name').value = data.website_name || '';
+                        document.getElementById('website_link').value = data.website_link || '';
+                        document.getElementById('website_logo_url').value = data.website_logo_url || '';
+                        renderColorOptions(data.theme_color || 'indigo');
+                    } else {
+                        // Fallback if settings don't exist yet
+                        renderColorOptions('indigo');
+                        console.warn("Could not fetch settings, using defaults.");
+                    }
+                } catch (error) {
+                    console.error("Error fetching settings:", error);
+                }
+            }
+
+            settingsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                settingsMessage.classList.remove('hidden', 'text-green-600', 'text-red-600');
+                settingsMessage.classList.add('text-gray-600');
+                settingsMessage.textContent = 'Saving...';
+                
+                const formData = new FormData(settingsForm);
+                const data = Object.fromEntries(formData.entries());
+
+                try {
+                    const response = await fetch('/api/settings/', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken,
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        settingsMessage.classList.remove('text-gray-600');
+                        settingsMessage.classList.add('text-green-600');
+                        settingsMessage.textContent = 'Settings saved successfully! Refreshing page...';
+                        // Force a full page reload to apply new theme and name/logo
+                        setTimeout(() => window.location.reload(), 1000); 
+                    } else {
+                        const errorData = await response.json();
+                        settingsMessage.classList.remove('text-gray-600');
+                        settingsMessage.classList.add('text-red-600');
+                        // Attempt to display a more readable error message
+                        const readableError = errorData.theme_color ? `Error: Theme color is not valid. Valid choices are: ${COLOR_OPTIONS.join(', ')}.` : JSON.stringify(errorData);
+                        settingsMessage.textContent = readableError;
+                        console.error("Settings save error:", errorData);
+                    }
+                } catch (error) {
+                    settingsMessage.classList.remove('text-gray-600');
+                    settingsMessage.classList.add('text-red-600');
+                    settingsMessage.textContent = 'Network error during save.';
+                    console.error("Fetch error during save:", error);
+                } finally {
+                    settingsMessage.classList.remove('hidden');
+                }
+            });
+            
+            // --- End Settings Modal Logic ---
+
+            // Function to add a message to the chat window
+            // Added isHtml flag for trusted content (like the welcome message)
+            function addMessage(content, role, isHtml = false) {
+                const isUser = role === 'user';
+                const messageElement = document.createElement('div');
+                
+                if (isUser) {
+                    messageElement.className = 'flex justify-end';
+                    // Dynamic color for user bubble
+                    messageElement.innerHTML = `
+                        <div class="bg-${themeColorName}-600 text-white p-4 rounded-xl rounded-br-sm max-w-[80%] shadow-lg break-words whitespace-pre-wrap">
+                            </div>
+                    `;
+                } else { // agent
+                    messageElement.className = 'flex justify-start';
+                    messageElement.innerHTML = `
+                        <div class="bg-gray-200 text-gray-800 p-4 rounded-xl rounded-tl-sm max-w-[80%] shadow-lg break-words whitespace-pre-wrap">
+                            </div>
+                    `;
+                }
+                
+                const contentDiv = messageElement.querySelector('div:last-child');
+                
+                // Use innerHTML only for trusted content (welcome message)
+                if (isHtml) {
+                    contentDiv.innerHTML = content;
+                } else {
+                    // Use textContent for all chat messages to prevent XSS
+                    contentDiv.textContent = content;
+                }
+                
+                chatWindow.appendChild(messageElement);
+            }
+
+            // Function to populate the sidebar with session links
+            function populateSessionList(sessions) {
+                sessionList.innerHTML = ''; // Clear existing list
+                
+                sessions.forEach(session => {
+                    const sessionId = session.id;
+                    const sessionName = session.name; 
+                    
+                    const link = document.createElement('a');
+                    // Use Django's URL tag to generate the base index URL
+                    link.href = "{% url 'index' %}?session_id=" + sessionId;
+                    
+                    // Dynamic color classes for session list links
+                    link.className = `flex justify-start items-center w-[90%] mx-auto p-2 text-sm rounded-lg hover:bg-${themeColorName}-600 transition duration-150 truncate 
+                        ${sessionId === currentSessionId ? `bg-${themeColorName}-500 text-white font-semibold shadow-md` : 'text-gray-200 hover:text-white'}`;
+                    
+                    // Use the session name from the API
+                    link.textContent = sessionName;
+                    link.addEventListener('click', () => toggleSidebar(false)); // Close sidebar on session change
+                    sessionList.appendChild(link);
+                });
+            }
+            
+            // Function to load and display chat history and sessions
+            async function loadChatData() {
+                try {
+                    const response = await fetch(`/api/history/?session_id=${currentSessionId}`);
+                    const data = await response.json();
+                    
+                    // 1. Clear chat window first
+                    chatWindow.innerHTML = '';
+
+                    // 2. Load History
+                    const history = data.history || [];
+                    if (history.length === 0) {
+                        // Dynamically create welcome HTML using the theme color name
+                        const welcomeHtml = `Welcome to Chat #<b class='text-${themeColorName}-700'>${currentSessionId}</b>! I am your ADK Agent, ready to assist you. Ask me anything!`;
+                        addMessage(welcomeHtml, 'agent', true); // Pass true to insert as HTML
+                    } else {
+                        history.forEach(msg => {
+                            if (msg.role && msg.text) {
+                                addMessage(msg.text, msg.role);
+                            }
+                        });
+                    }
+                    
+                    // 3. Populate Session List (data.sessions now contains objects with id and name)
+                    populateSessionList(data.sessions || []);
+
+                    // 4. Scroll to bottom smoothly after loading history
+                    scrollToBottom();
+
+                } catch (error) {
+                    console.error('Failed to load chat data:', error);
+                    chatWindow.innerHTML = '';
+                    addMessage('Network or server error. Please check your console/network.', 'agent');
+                }
+            }
+
+            // Load chat data when the page loads
+            loadChatData();
+
+            // Function to show a loading state
+            function showLoading() {
+                let loadingDiv = document.getElementById('loading-message');
+                if (!loadingDiv) {
+                    loadingDiv = document.createElement('div');
+                    loadingDiv.id = 'loading-message';
+                    loadingDiv.className = 'flex justify-start';
+                    loadingDiv.innerHTML = `
+                        <div class="bg-gray-200 text-gray-600 p-4 rounded-xl rounded-tl-sm max-w-[80%] shadow-md">
+                            <span class="animate-pulse">Agent is thinking...</span>
+                        </div>
+                    `;
+                    chatWindow.appendChild(loadingDiv);
+                    chatWindow.scrollTop = chatWindow.scrollHeight; 
+                }
+                return loadingDiv;
+            }
+
+            // Function to hide the loading state
+            function hideLoading() {
+                const loadingDiv = document.getElementById('loading-message');
+                if (loadingDiv) {
+                    loadingDiv.remove();
+                }
+            }
+
+            // Handle form submission
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const message = userInput.value.trim();
+                if (!message) return;
+
+                // 1. Display user message
+                addMessage(message, 'user');
+                
+                // 2. Clear input and disable input/button
+                userInput.value = '';
+                sendButton.disabled = true;
+                userInput.disabled = true;
+                scrollToBottom();
+
+                // 3. Show loading indicator
+                showLoading();
+
+                try {
+                    // 4. Send message to Django backend
+                    const response = await fetch(`/api/chat/?session_id=${currentSessionId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken,
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+
+                    const data = await response.json();
+
+                    // 5. Hide loading indicator
+                    hideLoading();
+
+                    // 6. Display agent response
+                    if (response.ok) {
+                        // Standard message insertion uses textContent by default
+                        addMessage(data.response, 'agent'); 
+                        scrollToBottom();
+                        // After a successful chat, reload session list to reflect changes/new sessions
+                        loadChatData(); 
+                    } else {
+                        const errorMsg = data.response || (data.message && data.message[0]) || 'Unknown Error';
+                        addMessage(`Error: ${errorMsg}`, 'agent');
+                        console.error('Agent API Error:', data);
+                    }
+
+                } catch (error) {
+                    // 5. Hide loading indicator on error
+                    hideLoading();
+                    // 6. Display network error
+                    addMessage('Network Error: Could not reach the server.', 'agent');
+                    console.error('Fetch Error:', error);
+                } finally {
+                    // 7. Re-enable input/button
+                    sendButton.disabled = false;
+                    userInput.disabled = false;
+                    userInput.focus();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
