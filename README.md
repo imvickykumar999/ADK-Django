@@ -14,7 +14,7 @@ python3 manage.py createsuperuser
 daphne myadk.asgi:application -b 0.0.0.0 -p 8000
 ```
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/700b20fd-7917-4574-83c7-feeb02d32cbd" />
+<img width="1324" height="702" alt="image" src="https://github.com/user-attachments/assets/4dcc0ec1-60a1-489d-928e-03c2e692d49b" />
 
 >## *Surface Web*
 >![surfaceweb](https://github.com/user-attachments/assets/63950d30-f535-4cfb-943d-aa2617fc45bb)
