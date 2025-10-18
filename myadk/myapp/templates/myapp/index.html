@@ -194,7 +194,7 @@
 
                 <div class="flex flex-col">
                     <label for="theme_color" class="font-semibold text-gray-700 mb-2">Theme Color</label>
-                    <div id="color-options" class="flex flex-wrap gap-2">
+                    <div id="color-options" class="grid grid-cols-5 gap-3">
                         <!-- Color radio buttons will be inserted here by JS -->
                     </div>
                 </div>
@@ -241,6 +241,7 @@
                 'rose', 
                 'orange', 
                 'red', 
+                'green', 
                 'pink'
             ];
 
@@ -348,7 +349,7 @@
                     const isChecked = color === currentTheme;
                     
                     const container = document.createElement('div');
-                    container.className = 'relative';
+                    container.className = 'relative flex justify-center items-center';
 
                     const input = document.createElement('input');
                     input.type = 'radio';
