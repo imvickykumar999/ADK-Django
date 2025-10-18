@@ -11,6 +11,7 @@ COLOR_CHOICES = [
     ('rose', 'Rose'),
     ('orange', 'Orange'),
     ('red', 'Red'),
+    ('green', 'Green'),
     ('pink', 'Pink'),
 ]
 
