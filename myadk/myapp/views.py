@@ -84,7 +84,6 @@ def initialize_adk_session_sync(session_id: str, adk_user_id: str):
 
 # --- Web Page Views ---
 
-@login_required
 def index(request):
     """Serves the main chat page, handling session ID redirection, protected by login."""
     session_id = request.GET.get('session_id')
@@ -324,7 +323,7 @@ class AppSettingsAPIView(APIView):
 
     def patch(self, request):
         if not request.user.is_authenticated:
-            return Response({"error": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"error": "Login to edit theme."}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
             # Get or create the settings object for the current user

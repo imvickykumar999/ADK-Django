@@ -96,6 +96,7 @@
             </div>
             
             <div class="flex-shrink-0 pt-4 border-t border-{{ MyThemeColor }}-500/50 mt-4">
+                {% if user.is_authenticated %}
                 <form action="{% url 'logout' %}" method="post" class="w-full">
                     {% csrf_token %}
                     <button 
@@ -104,9 +105,18 @@
                                bg-red-500 text-white font-semibold rounded-lg 
                                hover:bg-red-600 transition duration-200 shadow-md"
                     >
-                        Logout ({{ user.username }})
+                        Logout ({{ user.username|default:"User" }})
                     </button>
                 </form>
+                {% else %}
+                <a href="{% url 'login' %}" 
+                    class="block w-full text-center py-2 
+                           bg-green-500 text-white font-semibold rounded-lg 
+                           hover:bg-green-600 transition duration-200 shadow-md"
+                >
+                    Log In
+                </a>
+                {% endif %}
             </div>
         </div>
         
@@ -613,9 +623,9 @@
                         // After a successful chat, reload session list to reflect changes/new sessions
                         loadChatData(); 
                     } else {
-                        const errorMsg = data.response || (data.message && data.message[0]) || 'Unknown Error';
-                        addMessage(`Error: ${errorMsg}`, 'agent');
-                        console.error('Agent API Error:', data);
+                        const errorMsg = data.response || (data.message && data.message[0]) || 'Login to chat with the agent.';
+                        addMessage(`<strong>Note:</strong> ${errorMsg}`, 'agent', true);
+                        console.error('Agent API Error:', data);
                     }
 
                 } catch (error) {
