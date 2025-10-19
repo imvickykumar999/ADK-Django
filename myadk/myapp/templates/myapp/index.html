@@ -62,8 +62,10 @@
 </head>
 <body class="bg-gray-100 min-h-screen flex w-full"> 
     
+    <!-- OUTER CONTAINER: Set to 98% width and centered on large screens -->
     <div class="lg:w-[98%] lg:mx-auto lg:flex lg:h-screen">
 
+        <!-- SIDEBAR: Dynamic Gradient Applied & responsiveness adjusted for 98% container -->
         <div id="sidebar" class="fixed top-0 left-0 h-screen w-64 ring-1 ring-gray-200 p-4 flex-shrink-0 z-50 
              transform -translate-x-full transition-transform duration-300 flex flex-col
              lg:static lg:transform-none lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:ml-4 lg:mr-0 lg:rounded-xl
@@ -74,6 +76,7 @@
             <div class="flex-shrink-0 pb-4 border-b border-{{ MyThemeColor }}-500/50">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-white">Sessions</h2>
+                    <!-- Settings Icon -->
                     <button id="settings-button" class="p-1 rounded-full text-white/80 hover:bg-{{ MyThemeColor }}-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37z"></path>
@@ -81,6 +84,7 @@
                         </svg>
                     </button>
                 </div>
+                <!-- Adjusted button colors for contrast -->
                 <a href="{% url 'index' %}" id="new-chat-link" class="block w-full text-center py-2 bg-teal-400 text-gray-900 font-semibold rounded-lg hover:bg-teal-500 transition duration-200 shadow-md">
                     + New Chat
                 </a>
@@ -105,21 +109,22 @@
                     </button>
                 </form>
                 {% else %}
-                <button id="login-button" 
-                    type="button"
+                <a href="{% url 'login' %}" 
                     class="block w-full text-center py-2 
                            bg-green-500 text-white font-semibold rounded-lg 
                            hover:bg-green-600 transition duration-200 shadow-md"
                 >
                     Log In
-                </button>
+                </a>
                 {% endif %}
             </div>
         </div>
         
+        <!-- MAIN CHAT AREA: Adjusted margins for 98% centered layout -->
         <div class="w-full bg-white shadow-2xl ring-1 ring-gray-200 rounded-none overflow-hidden flex flex-col h-screen flex-grow 
              lg:h-[calc(100vh-2rem)] lg:mt-4 lg:mb-4 lg:mr-4 lg:ml-4 lg:rounded-xl">
             
+            <!-- TOP HEADER: Applied same dark gradient (left-to-right) -->
             <header class="p-4 bg-gradient-to-r from-{{ MyThemeColor }}-700 to-{{ MyThemeColor }}-800 text-white shadow-lg flex-shrink-0 rounded-t-none lg:rounded-t-xl flex items-center">
                 <button id="menu-button" class="lg:hidden p-2 mr-3 rounded-md hover:bg-{{ MyThemeColor }}-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
@@ -141,6 +146,7 @@
                 
             </header>
 
+            <!-- CHAT WINDOW: Applied a subtle, light theme gradient for the background -->
             <div id="chat-window" class="chat-window flex-grow overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-{{ MyThemeColor }}-50">
             </div>
 
@@ -165,7 +171,11 @@
             </div>
         </div>
         
-    </div> <div id="settings-modal" class="modal-inactive fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+    </div> <!-- END OUTER CONTAINER -->
+    
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-inactive fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+        <!-- Modal Content -->
         <div id="settings-modal-content" class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg mx-4 transform transition-all scale-95 opacity-0 duration-300">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
                 <h3 class="text-2xl font-bold text-gray-800">Brand Customization</h3>
@@ -177,25 +187,26 @@
                 <div class="flex flex-col">
                     <label for="website_name" class="font-semibold text-gray-700 mb-1">Brand Name</label>
                     <input type="text" id="website_name" name="website_name" required
-                            class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                           class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 
                 <div class="flex flex-col">
                     <label for="website_link" class="font-semibold text-gray-700 mb-1">Website Link</label>
                     <input type="url" id="website_link" name="website_link" required
-                            class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                           class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
                 <div class="flex flex-col">
                     <label for="website_logo_url" class="font-semibold text-gray-700 mb-1">Logo URL</label>
                     <input type="url" id="website_logo_url" name="website_logo_url" required
-                            class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                           class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
                 <div class="flex flex-col">
                     <label for="theme_color" class="font-semibold text-gray-700 mb-2">Theme Color</label>
                     <div id="color-options" class="grid grid-cols-5 gap-3">
-                        </div>
+                        <!-- Color radio buttons will be inserted here by JS -->
+                    </div>
                 </div>
 
                 <button type="submit" id="save-settings-button"
@@ -206,25 +217,8 @@
             </form>
         </div>
     </div>
-    <div id="login-modal" class="modal-inactive fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
-        <div id="login-modal-content" class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm mx-4 transform transition-all scale-95 opacity-0 duration-300">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-2xl font-bold text-gray-800">Log In</h3>
-                <button id="close-login-modal-button" type="button" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div id="login-form-container">
-                <p class="text-center text-gray-500">Loading login form...</p>
-            </div>
-            <div class="mt-4 pt-3 border-t border-gray-200 text-center">
-                <p class="text-sm text-gray-600">
-                    New user? 
-                    <a href="{% url 'register' %}" class="text-green-600 hover:text-green-700 font-semibold transition duration-150">Register here</a>
-                </p>
-            </div>
-            </div>
-    </div>
+    <!-- END SETTINGS MODAL -->
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const currentSessionId = "{{ current_session_id }}"; 
@@ -243,13 +237,6 @@
             const settingsForm = document.getElementById('settings-form');
             const settingsMessage = document.getElementById('settings-message');
             const settingsModalContent = document.getElementById('settings-modal-content');
-            
-            // 🔥 NEW: Login Modal Elements
-            const loginButton = document.getElementById('login-button'); // Only exists if not authenticated
-            const loginModal = document.getElementById('login-modal');
-            const closeLoginModalButton = document.getElementById('close-login-modal-button');
-            const loginModalContent = document.getElementById('login-modal-content');
-            const loginFormContainer = document.getElementById('login-form-container');
             
             // Dynamic color variable for use in JS
             let themeColorName = "{{ MyThemeColor }}"; 
@@ -332,7 +319,7 @@
             
             // --- Settings Modal Logic ---
             
-            function toggleSettingsModal(show) {
+            function toggleModal(show) {
                 if (show) {
                     settingsModal.classList.remove('modal-inactive');
                     settingsModal.classList.add('modal-active');
@@ -353,12 +340,12 @@
                 }
             }
             
-            settingsButton.addEventListener('click', () => toggleSettingsModal(true));
-            closeModalButton.addEventListener('click', () => toggleSettingsModal(false));
+            settingsButton.addEventListener('click', () => toggleModal(true));
+            closeModalButton.addEventListener('click', () => toggleModal(false));
             settingsModal.addEventListener('click', (e) => {
                 // Close when clicking outside the modal content
                 if (e.target === settingsModal) {
-                    toggleSettingsModal(false);
+                    toggleModal(false);
                 }
             });
 
@@ -396,8 +383,8 @@
                     }
 
                     input.addEventListener('change', () => {
-                            // Rerender to update the checkmark/ring visually
-                            renderColorOptions(input.value);
+                         // Rerender to update the checkmark/ring visually
+                         renderColorOptions(input.value);
                     });
                     
                     container.appendChild(input);
@@ -470,151 +457,6 @@
             });
             
             // --- End Settings Modal Logic ---
-            
-            
-            // 🔥 NEW: Login Modal Logic 
-            
-            function toggleLoginModal(show) {
-                if (show) {
-                    loginModal.classList.remove('modal-inactive');
-                    loginModal.classList.add('modal-active');
-                    setTimeout(() => {
-                        loginModalContent.classList.remove('scale-95', 'opacity-0');
-                        loginModalContent.classList.add('scale-100', 'opacity-100');
-                    }, 10);
-                } else {
-                    loginModalContent.classList.remove('scale-100', 'opacity-100');
-                    loginModalContent.classList.add('scale-95', 'opacity-0');
-                    setTimeout(() => {
-                        loginModal.classList.remove('modal-active');
-                        loginModal.classList.add('modal-inactive');
-                        loginFormContainer.innerHTML = '<p class="text-center text-gray-500">Loading login form...</p>'; // Reset form container
-                    }, 300);
-                }
-            }
-            
-            // Event listeners for the new login modal
-            if (loginButton) {
-                loginButton.addEventListener('click', () => {
-                    toggleLoginModal(true);
-                    fetchLoginForm();
-                });
-            }
-            closeLoginModalButton.addEventListener('click', () => toggleLoginModal(false));
-            loginModal.addEventListener('click', (e) => {
-                if (e.target === loginModal) {
-                    toggleLoginModal(false);
-                }
-            });
-            
-            // Function to fetch the login form HTML
-            async function fetchLoginForm() {
-                try {
-                    // Fetch the original login page content
-                    const response = await fetch('{% url "login" %}');
-                    const html = await response.text();
-                    
-                    // A simple, *fragile* way to extract the form: find the part between <form> and </form>
-                    // A more robust method would be to use a custom API endpoint for the login form fragment.
-                    // For this example, we'll extract the full body content and assume it's mostly the form/container.
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    
-                    // Assuming the login page is simple and the <form> is easy to find, 
-                    // or wrapping the form in a distinctive div on the actual login template.
-                    // Since we don't have the login.html template, we'll fetch the whole thing and 
-                    // replace the container's content (which is what usually happens with a raw redirect).
-                    // For simplicity, let's create a *mock* form template here:
-                    const mockFormHtml = `
-                        <form id="ajax-login-form" method="post" action="{% url 'login' %}" class="space-y-4">
-                            <input type="hidden" name="csrfmiddlewaretoken" value="${csrftoken}">
-                            <div>
-                                <label for="id_username" class="block text-sm font-medium text-gray-700">Username</label>
-                                <input type="text" name="username" id="id_username" required="" class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500">
-                            </div>
-                            <div>
-                                <label for="id_password" class="block text-sm font-medium text-gray-700">Password</label>
-                                <input type="password" name="password" id="id_password" required="" class="mt-1 p-2 w-full border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500">
-                            </div>
-                            <button type="submit" 
-                                class="w-full bg-green-600 text-white p-2 rounded-md font-bold hover:bg-green-700 transition duration-200">
-                                Log In
-                            </button>
-                            <div id="login-error-message" class="text-red-500 text-sm text-center"></div>
-                        </form>
-                    `;
-                    loginFormContainer.innerHTML = mockFormHtml;
-                    
-                    // Attach event listener to the now-rendered form
-                    document.getElementById('ajax-login-form').addEventListener('submit', handleAjaxLogin);
-                } catch (error) {
-                    console.error('Error fetching login form:', error);
-                    loginFormContainer.innerHTML = '<p class="text-center text-red-500">Could not load login form. Check if your /login/ URL returns valid HTML.</p>';
-                }
-            }
-            
-            // Function to handle the AJAX form submission
-            async function handleAjaxLogin(e) {
-                e.preventDefault();
-                const form = e.target;
-                const errorMessageDiv = document.getElementById('login-error-message');
-                errorMessageDiv.textContent = ''; // Clear previous error
-                
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
-                
-                // Disable button
-                const submitButton = form.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Logging in...';
-
-                try {
-                    const response = await fetch(form.action, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'X-CSRFToken': csrftoken,
-                        },
-                        body: new URLSearchParams(data).toString(),
-                        // Crucially, Django will attempt a full redirect on success/failure.
-                        // We must rely on the response *status* and the browser's behavior.
-                        // A successful login usually results in a 302 redirect to the `next` param (or `settings.LOGIN_REDIRECT_URL`).
-                        // If we don't follow redirects, we'll see a 200 or 400.
-                        redirect: 'manual' // Prevents the fetch API from following the redirect
-                    });
-                    
-                    // 2xx status (or 302 manual redirect status) often indicates success
-                    // Django's default login view returns 200 on form submit, which on failure contains the form again.
-                    // On success, it redirects (302). If fetch is set to redirect: 'manual', we get a type 'opaqueredirect'.
-                    
-                    if (response.type === 'opaqueredirect' || response.status === 302 || response.status === 200) {
-                        // Success is the expected behavior, but we must *verify* the redirect to the chat page
-                        // Since we can't inspect the redirected body, we trust the status is good enough 
-                        // and reload the page to check if the session is now authenticated.
-                        errorMessageDiv.textContent = 'Login successful! Reloading...';
-                        errorMessageDiv.classList.add('text-green-500');
-                        setTimeout(() => window.location.reload(true), 500);
-                        return;
-                    }
-
-                    // If it's not a success/redirect, it's likely a validation error.
-                    // Since we mocked the form, this part is tricky, but generally, 
-                    // we'd parse the response HTML for error messages.
-                    
-                    // Fallback for form failure: assume form processing failed if no redirect.
-                    errorMessageDiv.textContent = 'Invalid username or password.';
-                    errorMessageDiv.classList.remove('text-green-500');
-                    
-                } catch (error) {
-                    errorMessageDiv.textContent = 'A network error occurred.';
-                    console.error('Login AJAX error:', error);
-                } finally {
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Log In';
-                }
-            }
-
-            // --- End Login Modal Logic ---
 
             // Function to add a message to the chat window
             // Added isHtml flag for trusted content (like the welcome message)
@@ -781,17 +623,9 @@
                         // After a successful chat, reload session list to reflect changes/new sessions
                         loadChatData(); 
                     } else {
-                        // If user is not authenticated, the API returns 401. 
-                        const errorMsg = data.error || data.response || (data.message && data.message[0]) || 'Login to chat with the agent.';
-                        addMessage(`<strong>Error:</strong> ${errorMsg}`, 'agent', true);
-                        
-                        // If it's an auth error, auto-open the login modal
-                        if (response.status === 401) {
-                            toggleLoginModal(true);
-                            fetchLoginForm();
-                        }
-                        
-                        console.error('Agent API Error:', data);
+                        const errorMsg = data.response || (data.message && data.message[0]) || 'Login to chat with the agent.';
+                        addMessage(`<strong>Note:</strong> ${errorMsg}`, 'agent', true);
+                        console.error('Agent API Error:', data);
                     }
 
                 } catch (error) {
