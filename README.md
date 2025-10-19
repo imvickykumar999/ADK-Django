@@ -11,7 +11,7 @@ python manage.py migrate
 
 python manage.py collectstatic
 python manage.py createsuperuser
-python .\manage.py runserver 8000
+python manage.py runserver 8000
 ```
 
 ![editable form](https://github.com/user-attachments/assets/fccd2e28-b47a-4578-8f52-5dd1ceb9de98)

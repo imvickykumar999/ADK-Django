@@ -103,6 +103,19 @@ DATABASES = {
     }
 }
 
+CSRF_TRUSTED_ORIGINS = [
+    # Include the secure origin from your error message
+    'https://localhost:8000',
+    
+    # Also include the IP version for maximum compatibility
+    'https://127.0.0.1:8000', 
+    
+    # If your browser is defaulting to HTTPS for localhost,
+    # but the request is actually HTTP, include the HTTP versions as well:
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
 JAZZMIN_SETTINGS = {
     "site_title": "My Admin",
     "site_header": "My Admin",
