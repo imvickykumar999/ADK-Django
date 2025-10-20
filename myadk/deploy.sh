@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 # Script: deploy.sh
-# Purpose: Installs Minikube, deploys the myadk-web application using the embedded
-#          k8s_deployment.yaml file, and forwards traffic to local port 8000.
+# Purpose: Installs Minikube, deploys the myadk-web application, and forwards traffic.
+#          NOTE: All API Key/Secret functionality has been removed as requested.
 #
 # USAGE:
 # 1. Save the file: chmod +x deploy.sh
@@ -11,7 +11,6 @@
 #                     minikube delete
 
 # --- Configuration Variables ---
-API_KEY_PLACEHOLDER="AIza....YOUR_API_KEY" # get your key from https://aistudio.google.com/api-keys
 K8S_YAML_FILE="k8s_deployment.yaml"
 APP_SERVICE="myadk-web-service"
 LOCAL_PORT=8000
@@ -35,7 +34,7 @@ if ! check_command minikube; then
     echo "Minikube installed."
 fi
 
-# Check for kubectl (should be present if minikube is present/installed)
+# Check for kubectl
 if ! check_command kubectl; then
     echo "kubectl not found. Please ensure it is installed and in your PATH."
     exit 1
@@ -45,7 +44,7 @@ fi
 # --- 2. Write Kubernetes YAML File ---
 echo "--- 2. Creating Kubernetes Manifest: ${K8S_YAML_FILE} ---"
 
-# Write the provided YAML content using a here document
+# Write the YAML content (without API Key references)
 cat <<EOF > ${K8S_YAML_FILE}
 apiVersion: apps/v1
 kind: Deployment
@@ -71,34 +70,26 @@ spec:
         ports:
         - containerPort: 8000 # This must match the port exposed in your Dockerfile (8000)
         
-        # --- SECURE SECRET INJECTION ---
-        # THIS IS THE SECURE WAY to pass your API key at runtime.
+        # --- Environment Variables ---
         env:
-        - name: YOUR_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: myadk-secrets # Name of the Kubernetes Secret you will create
-              key: api-key        # Key name inside the Secret
-        
-        # --- CSRF/ALLOWED HOSTS FIX ---
         # Django needs to know the external host and internal cluster IP it can trust.
         - name: DJANGO_ALLOWED_HOSTS
           value: "localhost,127.0.0.1,10.111.97.107" # Added cluster IP as allowed host
         - name: CSRF_TRUSTED_ORIGINS # Django must trust the origin URL accessed by the user
-          value: "http://localhost:8000" # CHANGED: Now expects traffic on port 8000
+          value: "http://localhost:8000" # Expects traffic on port 8000
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: myadk-web-service
 spec:
-  # Use LoadBalancer type to expose the app externally via a cloud load balancer
+  # Use LoadBalancer type to expose the app externally
   type: LoadBalancer
   selector:
     app: myadk-web # Matches the label in the Deployment above to route traffic
   ports:
     - protocol: TCP
-      port: 8000             # CHANGED: The port the Load Balancer listens on (external access)
+      port: 8000           # The port the Load Balancer listens on (external access)
       targetPort: 8000     # The port the container is listening on (internal to the pod)
 EOF
 
@@ -112,14 +103,8 @@ kubectl wait --for=condition=ready node minikube --timeout=300s
 echo "Cluster is ready."
 
 
-# --- 4. Create Kubernetes Secret ---
-echo "--- 4. Creating Secret (API Key) ---"
-# Note: kubectl create secret will fail if the secret already exists. We ignore errors here.
-if kubectl create secret generic myadk-secrets --from-literal=api-key="${API_KEY_PLACEHOLDER}"; then
-    echo "Secret 'myadk-secrets' created successfully."
-else
-    echo "Secret 'myadk-secrets' already exists or creation failed. Skipping creation."
-fi
+# --- 4. Create Kubernetes Secret (Skipped) ---
+echo "--- 4. Secret Creation Skipped (No API Key Required) ---"
 
 
 # --- 5. Apply the Deployment ---
