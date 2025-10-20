@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myadk-web-deployment
+  labels:
+    app: myadk-web
+spec:
+  # Instruct Kubernetes to always run 3 copies of your application for high availability
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myadk-web
+  template:
+    metadata:
+      labels:
+        app: myadk-web
+    spec:
+      containers:
+      - name: myadk-django-container
+        # This is where Kubernetes "pulls" your image from Docker Hub
+        image: imvickykumar999/myadk-django:latest
+        ports:
+        - containerPort: 8000 # This must match the port exposed in your Dockerfile (8000)
+        
+        # --- SECURE SECRET INJECTION ---
+        # THIS IS THE SECURE WAY to pass your API key at runtime.
+        env:
+        - name: AIza....YOUR_API_KEY # get your key from https://aistudio.google.com/api-keys
+          valueFrom:
+            secretKeyRef:
+              name: myadk-secrets # Name of the Kubernetes Secret you will create
+              key: api-key        # Key name inside the Secret
+        
+        # --- CSRF/ALLOWED HOSTS FIX ---
+        # Django needs to know the external host and internal cluster IP it can trust.
+        - name: DJANGO_ALLOWED_HOSTS
+          value: "localhost,127.0.0.1,10.111.97.107" # Added cluster IP as allowed host
+        - name: CSRF_TRUSTED_ORIGINS # Django must trust the origin URL accessed by the user
+          value: "http://localhost:8000" # CHANGED: Now expects traffic on port 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myadk-web-service
+spec:
+  # Use LoadBalancer type to expose the app externally via a cloud load balancer
+  type: LoadBalancer
+  selector:
+    app: myadk-web # Matches the label in the Deployment above to route traffic
+  ports:
+    - protocol: TCP
+      port: 8000             # CHANGED: The port the Load Balancer listens on (external access)
+      targetPort: 8000     # The port the container is listening on (internal to the pod)
