@@ -1,5 +1,14 @@
 # ADK Django Chat Application Deployment
 
+### How to Run This Script
+
+1.  **Save the file:** Save the content above as `deploy.sh` in your project root.
+2.  **Make it executable:** Run `chmod +x deploy.sh` in your terminal.
+3.  **Execute:** Run `./deploy.sh`
+4.  The script will print the process ID (`FORWARD_PID`) and instructions for accessing and cleaning up the service.
+
+---
+
 This repository contains the source code for the **ADK Django Chat Application**, containerized using Docker for consistent, portable deployment across any environment (local, staging, or production server).
 
 ## 🚀 Quick Start (Pull & Run)
